@@ -1,0 +1,41 @@
+{
+  "itemGroup.xenthor_racas": "Xenthor",
+
+  "classe.xenthor_racas.guerreiro":        "Guerreiro",
+  "classe.xenthor_racas.guerreiro_magico": "Guerreiro Magico",
+  "classe.xenthor_racas.mago":             "Mago",
+
+  "raca.xenthor_racas.humano":       "Humano",
+  "raca.xenthor_racas.elfo_natural": "Elfo Natural",
+  "raca.xenthor_racas.elfo_negro":   "Elfo Negro",
+  "raca.xenthor_racas.anao":         "Anao",
+  "raca.xenthor_racas.celestial":    "Celestial",
+  "raca.xenthor_racas.morto_vivo":   "Morto-Vivo",
+
+  "elemento.xenthor_racas.fogo":     "Fogo",
+  "elemento.xenthor_racas.gelo":     "Gelo",
+  "elemento.xenthor_racas.agua":     "Agua",
+  "elemento.xenthor_racas.sangue":   "Sangue",
+  "elemento.xenthor_racas.ender":    "Ender",
+  "elemento.xenthor_racas.eldritch": "Eldritch",
+  "elemento.xenthor_racas.holy":     "Holy",
+  "elemento.xenthor_racas.natureza": "Natureza",
+  "elemento.xenthor_racas.raio":     "Raio",
+  "elemento.xenthor_racas.evocador": "Evocador",
+
+  "key.xenthor_racas.forma_negra":     "Forma Negra",
+  "key.xenthor_racas.cura_celestial":  "Cura Celestial",
+  "key.xenthor_racas.voo_celestial":   "Voo Celestial",
+  "key.categories.xenthor_racas":      "Xenthor SMP",
+
+  "comando.xenthor_racas.classe_aplicada":        "Classe %2$s aplicada ao jogador %1$s.",
+  "comando.xenthor_racas.classe_desconhecida":    "Classe desconhecida: '%1$s'.",
+  "comando.xenthor_racas.elemento_desconhecido":  "Elemento desconhecido: '%1$s'.",
+  "comando.xenthor_racas.sem_alvos":              "Nenhum jogador encontrado.",
+  "comando.xenthor_racas.escolha_elemento":       "Escolha seu elemento principal:",
+  "comando.xenthor_racas.mago_elemento_aplicado": "Mago (%2$s) aplicado ao jogador %1$s.",
+  "comando.xenthor_racas.classe_ja_escolhida":    "Voce ja escolheu sua classe e nao pode muda-la!",
+  "comando.xenthor_racas.classe_removida":        "Classe de %1$s foi removida.",
+  "comando.xenthor_racas.raca_aplicada":          "Raca %2$s aplicada ao jogador %1$s.",
+  "comando.xenthor_racas.raca_desconhecida":      "Raca desconhecida: '%1$s'."
+}

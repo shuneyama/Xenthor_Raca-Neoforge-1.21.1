@@ -95,10 +95,10 @@ public class AtributosClasse {
     }
 
     private static void addV(Player jogador, Holder<Attribute> atributo,
-                              ResourceLocation id, double valor, AttributeModifier.Operation op) {
+                             ResourceLocation id, double valor, AttributeModifier.Operation op) {
         AttributeInstance inst = jogador.getAttribute(atributo);
         if (inst != null && inst.getModifier(id) == null)
-            inst.addTransientModifier(new AttributeModifier(id, valor, op));
+            inst.addPermanentModifier(new AttributeModifier(id, valor, op));
     }
 
     private static void removerVanilla(Player jogador, Holder<Attribute> atributo, ResourceLocation... ids) {
@@ -108,10 +108,10 @@ public class AtributosClasse {
     }
 
     private static void addI(Player jogador, String chave, ResourceLocation id,
-                              double valor, AttributeModifier.Operation op) {
+                             double valor, AttributeModifier.Operation op) {
         AttributeInstance inst = buscarAtributo(jogador, chave);
         if (inst != null && inst.getModifier(id) == null)
-            inst.addTransientModifier(new AttributeModifier(id, valor, op));
+            inst.addPermanentModifier(new AttributeModifier(id, valor, op));
     }
 
     private static void removerIrons(Player jogador, String chave, ResourceLocation... ids) {

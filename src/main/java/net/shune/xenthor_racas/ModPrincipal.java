@@ -12,22 +12,26 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.shune.xenthor_racas.cliente.TeclasXenthor;
+import net.shune.xenthor_racas.efeito.RegistroEfeitos;
+import net.shune.xenthor_racas.efeito.RegistroPocoes;
 import net.shune.xenthor_racas.rede.RedeXenthor;
+import net.shune.xenthor_racas.voo.RegistroItens;
 
 @Mod(ModPrincipal.ID_MOD)
 public class ModPrincipal {
 
-    public static final String ID_MOD       = "xenthor_racas";
-    public static final String TAG_CLASSE   = ID_MOD + ":classe_jogador";
-    public static final String TAG_ELEMENTO = ID_MOD + ":elemento_jogador";
-    public static final String TAG_RACA               = ID_MOD + ":raca_jogador";
+    public static final String ID_MOD                  = "xenthor_racas";
+    public static final String TAG_CLASSE              = ID_MOD + ":classe_jogador";
+    public static final String TAG_ELEMENTO            = ID_MOD + ":elemento_jogador";
+    public static final String TAG_RACA                = ID_MOD + ":raca_jogador";
     public static final String TAG_AGUARDANDO_ELEMENTO = ID_MOD + ":aguardando_elemento";
 
     public static final DeferredRegister<CreativeModeTab> ABAS_CRIATIVAS =
@@ -43,13 +47,41 @@ public class ModPrincipal {
     public ModPrincipal(IEventBus barramentoMod, ModContainer containerMod) {
         ABAS_CRIATIVAS.register(barramentoMod);
         RedeXenthor.registrar(barramentoMod);
+        RegistroItens.registrar(barramentoMod);
+        RegistroEfeitos.registrar(barramentoMod);
         NeoForge.EVENT_BUS.register(this);
+        RegistroPocoes.registrar(barramentoMod);
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            barramentoMod.addListener(TeclasXenthor::registrarTeclas);
+        }
     }
 
     @SubscribeEvent
     public void aoRegistrarComandos(RegisterCommandsEvent evento) {
         ComandoClasse.registrar(evento.getDispatcher());
         ComandoRaca.registrar(evento.getDispatcher());
+        ComandoAnalise.registrar(evento.getDispatcher(), "shune");
+        ComandoAnalise.registrar(evento.getDispatcher(), "xenthor");
+    }
+
+    @SubscribeEvent
+    public void aoJogadorClonar(PlayerEvent.Clone evento) {
+        if (!(evento.getEntity() instanceof ServerPlayer novo)) return;
+        var antigo = evento.getOriginal().getPersistentData();
+        var dados = novo.getPersistentData();
+
+        for (String chave : antigo.getAllKeys()) {
+            if (chave.startsWith(ID_MOD + ":")) {
+                dados.put(chave, antigo.get(chave).copy());
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void aoJogadorRespawnar(PlayerEvent.PlayerRespawnEvent evento) {
+        if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
+        restaurarRaca(jogador);
+        restaurarClasse(jogador);
     }
 
     @SubscribeEvent
@@ -74,6 +106,21 @@ public class ModPrincipal {
 
         AtributosRaca.aplicarRaca(jogador, raca);
         EscalaJogador.aplicarEscala(jogador, raca);
+
+        switch (raca) {
+            case CELESTIAL  -> MonitorCelestial.aplicarEquipeGlowing(jogador);
+            case CORROMPIDO -> MonitorCorrompido.aplicarEquipeGlowing(jogador);
+            case TRITAO     -> MonitorTritao.aplicarEquipeGlowing(jogador);
+            case FADA       -> MonitorFada.aplicarEquipeGlowing(jogador);
+            case ANDROID    -> MonitorAndroid.aplicarEquipeGlowing(jogador);
+            case DRAGONIC   -> MonitorDragonic.aplicarEquipeGlowing(jogador);
+            case MORTO_VIVO -> MonitorMortoVivo.aplicarEquipeGlowing(jogador);
+            case VAMPIRO     -> MonitorVampiro.aplicarEquipeGlowing(jogador);
+            case DAMPIRO     -> MonitorVampiro.aplicarEquipeGlowing(jogador);
+            case AMALDICOADO -> MonitorAmaldicoado.aplicarEquipeGlowing(jogador);
+            case ESPIRITO    -> MonitorEspirito.aplicarEquipeGlowing(jogador);
+            default -> {}
+        }
     }
 
     private static void restaurarClasse(ServerPlayer jogador) {
@@ -102,24 +149,24 @@ public class ModPrincipal {
     private static void enviarMensagemEscolhaClasse(ServerPlayer jogador) {
         jogador.sendSystemMessage(Component.empty());
         jogador.sendSystemMessage(
-            Component.literal("⚔ Xenthor SMP ⚔")
-                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+                Component.literal("⚔ Xenthor SMP ⚔")
+                        .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         jogador.sendSystemMessage(
-            Component.literal("Voce ainda nao escolheu uma classe!")
-                .withStyle(ChatFormatting.YELLOW));
+                Component.literal("Voce ainda nao escolheu uma classe!")
+                        .withStyle(ChatFormatting.YELLOW));
         jogador.sendSystemMessage(
-            Component.literal("Use o comando abaixo para jogar no seu estilo:")
-                .withStyle(ChatFormatting.GRAY));
+                Component.literal("Use o comando abaixo para jogar no seu estilo:")
+                        .withStyle(ChatFormatting.GRAY));
 
         MutableComponent botao = Component.literal("[ /classes @s <classe> ]")
-            .withStyle(style -> style
-                .withColor(0x55FFFF)
-                .withBold(true)
-                .withClickEvent(new ClickEvent(
-                    ClickEvent.Action.SUGGEST_COMMAND,
-                    "/classes " + jogador.getName().getString() + " "
-                ))
-            );
+                .withStyle(style -> style
+                        .withColor(0x55FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent(
+                                ClickEvent.Action.SUGGEST_COMMAND,
+                                "/classes " + jogador.getName().getString() + " "
+                        ))
+                );
 
         jogador.sendSystemMessage(botao);
         jogador.sendSystemMessage(Component.empty());

@@ -10,8 +10,6 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 @EventBusSubscriber(modid = ModPrincipal.ID_MOD)
 public class MonitorDanoElfo {
 
-    private static final float MULTIPLICADOR_DANO_FOGO = 1.10f;
-
     @SubscribeEvent
     public static void aoDanoRecebido(LivingIncomingDamageEvent evento) {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
@@ -22,7 +20,7 @@ public class MonitorDanoElfo {
         DamageSource fonte = evento.getSource();
 
         if (fonte.is(DamageTypeTags.IS_FIRE)) {
-            evento.setAmount(evento.getAmount() * MULTIPLICADOR_DANO_FOGO);
+            evento.setAmount(evento.getAmount() * 2.0f);
         }
     }
 }

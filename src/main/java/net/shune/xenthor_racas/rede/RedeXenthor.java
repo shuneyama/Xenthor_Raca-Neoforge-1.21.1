@@ -5,9 +5,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.shune.xenthor_racas.CuraCelestial;
-import net.shune.xenthor_racas.FormaNegra;
-import net.shune.xenthor_racas.VooCelestial;
+import net.shune.xenthor_racas.PoderRaca;
+import net.shune.xenthor_racas.PoderTransformacao;
 import net.shune.xenthor_racas.cliente.ManipuladorPacoteCliente;
 
 public class RedeXenthor {
@@ -19,24 +18,26 @@ public class RedeXenthor {
     private static void aoRegistrarPayloads(RegisterPayloadHandlersEvent evento) {
         PayloadRegistrar reg = evento.registrar("1.0.0");
 
-        reg.playToClient(PacoteClasseEscolhida.TIPO,   PacoteClasseEscolhida.CODEC,   ManipuladorPacoteCliente::aoReceberClasseEscolhida);
-        reg.playToClient(PacoteFormaNegra.TIPO,        PacoteFormaNegra.CODEC,        ManipuladorPacoteCliente::aoReceberFormaNegra);
-        reg.playToClient(PacoteVooCelestial.TIPO,      PacoteVooCelestial.CODEC,      ManipuladorPacoteCliente::aoReceberVooCelestial);
+        reg.playToClient(PacoteClasseEscolhida.TIPO, PacoteClasseEscolhida.CODEC, ManipuladorPacoteCliente::aoReceberClasseEscolhida);
+        reg.playToClient(PacoteFormaNegra.TIPO, PacoteFormaNegra.CODEC, ManipuladorPacoteCliente::aoReceberFormaNegra);
+        reg.playToClient(PacoteVooCelestial.TIPO, PacoteVooCelestial.CODEC, ManipuladorPacoteCliente::aoReceberVooCelestial);
+        reg.playToClient(PacoteSyncTransformacao.TIPO, PacoteSyncTransformacao.CODEC, ManipuladorPacoteCliente::aoReceberTransformacao);
+        reg.playToClient(PacoteSyncEspectral.TIPO, PacoteSyncEspectral.CODEC, ManipuladorPacoteCliente::aoReceberEspectral);
 
-        reg.playToServer(PacoteAtivarFormaNegra.TIPO,  PacoteAtivarFormaNegra.CODEC,
-            (pkt, ctx) -> ctx.enqueueWork(() -> {
-                if (ctx.player() instanceof ServerPlayer j) FormaNegra.tentar(j);
-            }));
+        reg.playToServer(PacotePoderPrimario.TIPO, PacotePoderPrimario.CODEC,
+                (pkt, ctx) -> ctx.enqueueWork(() -> {
+                    if (ctx.player() instanceof ServerPlayer j) PoderRaca.ativarPrimario(j);
+                }));
 
-        reg.playToServer(PacoteAtivarCuraCelestial.TIPO, PacoteAtivarCuraCelestial.CODEC,
-            (pkt, ctx) -> ctx.enqueueWork(() -> {
-                if (ctx.player() instanceof ServerPlayer j) CuraCelestial.tentar(j);
-            }));
+        reg.playToServer(PacotePoderSecundario.TIPO, PacotePoderSecundario.CODEC,
+                (pkt, ctx) -> ctx.enqueueWork(() -> {
+                    if (ctx.player() instanceof ServerPlayer j) PoderRaca.ativarSecundario(j);
+                }));
 
-        reg.playToServer(PacoteAtivarVooCelestial.TIPO, PacoteAtivarVooCelestial.CODEC,
-            (pkt, ctx) -> ctx.enqueueWork(() -> {
-                if (ctx.player() instanceof ServerPlayer j) VooCelestial.alternar(j);
-            }));
+        reg.playToServer(PacoteTransformacao.TIPO, PacoteTransformacao.CODEC,
+                (pkt, ctx) -> ctx.enqueueWork(() -> {
+                    if (ctx.player() instanceof ServerPlayer j) PoderTransformacao.tentar(j);
+                }));
     }
 
     public static void enviarParaJogador(ServerPlayer jogador, String idClasse, String idElemento) {
@@ -49,5 +50,13 @@ public class RedeXenthor {
 
     public static void enviarVooCelestial(ServerPlayer jogador, boolean ativo) {
         PacketDistributor.sendToAllPlayers(new PacoteVooCelestial(jogador.getUUID(), ativo));
+    }
+
+    public static void enviarTransformacao(ServerPlayer jogador, String forma) {
+        PacketDistributor.sendToAllPlayers(new PacoteSyncTransformacao(jogador.getUUID(), forma));
+    }
+
+    public static void enviarEspectral(ServerPlayer jogador, boolean ativo) {
+        PacketDistributor.sendToAllPlayers(new PacoteSyncEspectral(jogador.getUUID(), ativo));
     }
 }

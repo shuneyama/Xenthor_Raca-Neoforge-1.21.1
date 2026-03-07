@@ -35,23 +35,25 @@ public class ComandoClasse {
 
     public static void registrar(CommandDispatcher<CommandSourceStack> despachante) {
         despachante.register(
-            Commands.literal("classes")
-                .requires(CommandSourceStack::isPlayer)
-                .then(Commands.argument("alvos", EntityArgument.players())
-                    .then(Commands.argument("classe", StringArgumentType.word())
-                        .suggests(SUGESTOES_CLASSE)
-                        .executes(ComandoClasse::executar)
-                    )
-                )
+                Commands.literal("classes")
+                        .requires(CommandSourceStack::isPlayer)
+                        .then(Commands.argument("classe", StringArgumentType.word())
+                                .suggests(SUGESTOES_CLASSE)
+                                .executes(ComandoClasse::executarProprio)
+                                .then(Commands.argument("alvos", EntityArgument.players())
+                                        .requires(origem -> origem.hasPermission(2))
+                                        .executes(ComandoClasse::executarOutro)
+                                )
+                        )
         );
 
         despachante.register(
-            Commands.literal("classes_elemento")
-                .requires(origem -> origem.isPlayer() && aguardandoElemento(origem))
-                .then(Commands.argument("elemento", StringArgumentType.word())
-                    .suggests(SUGESTOES_ELEMENTO)
-                    .executes(ComandoClasse::executarElemento)
-                )
+                Commands.literal("classes_elemento")
+                        .requires(origem -> origem.isPlayer() && aguardandoElemento(origem))
+                        .then(Commands.argument("elemento", StringArgumentType.word())
+                                .suggests(SUGESTOES_ELEMENTO)
+                                .executes(ComandoClasse::executarElemento)
+                        )
         );
 
         registrarReset(despachante, "shune");
@@ -72,8 +74,37 @@ public class ComandoClasse {
         );
     }
 
-    private static int executar(CommandContext<CommandSourceStack> ctx) {
+    private static int executarProprio(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack origem = ctx.getSource();
+        if (!(origem.getEntity() instanceof ServerPlayer jogador)) return 0;
+
+        if (jogadorJaTemClasse(jogador)) {
+            jogador.sendSystemMessage(
+                    Component.translatable("comando.xenthor_racas.classe_ja_escolhida")
+                            .withStyle(ChatFormatting.RED));
+            return 0;
+        }
+
+        String argClasse = StringArgumentType.getString(ctx, "classe").toLowerCase();
+        ClasseRaca classeEscolhida = ClasseRaca.porId(argClasse);
+        if (classeEscolhida == null) {
+            origem.sendFailure(Component.translatable("comando.xenthor_racas.classe_desconhecida", argClasse));
+            return 0;
+        }
+
+        if (classeEscolhida == ClasseRaca.MAGO) {
+            jogador.getPersistentData().putBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO, true);
+            enviarMenuElementos(jogador);
+            return 1;
+        }
+
+        aplicarEConfirmar(jogador, classeEscolhida);
+        return 1;
+    }
+
+    private static int executarOutro(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack origem = ctx.getSource();
+        String argClasse = StringArgumentType.getString(ctx, "classe").toLowerCase();
 
         Collection<ServerPlayer> alvos;
         try {
@@ -83,27 +114,19 @@ public class ComandoClasse {
             return 0;
         }
 
-        String argClasse = StringArgumentType.getString(ctx, "classe").toLowerCase();
+        ClasseRaca classeEscolhida = ClasseRaca.porId(argClasse);
+        if (classeEscolhida == null) {
+            origem.sendFailure(Component.translatable("comando.xenthor_racas.classe_desconhecida", argClasse));
+            return 0;
+        }
+
         int afetados = 0;
-
         for (ServerPlayer jogador : alvos) {
-            if (jogadorJaTemClasse(jogador)) {
-                jogador.sendSystemMessage(
-                    Component.translatable("comando.xenthor_racas.classe_ja_escolhida")
-                        .withStyle(ChatFormatting.RED));
-                continue;
-            }
-
-            ClasseRaca classeEscolhida = ClasseRaca.porId(argClasse);
-            if (classeEscolhida == null) {
-                origem.sendFailure(Component.translatable("comando.xenthor_racas.classe_desconhecida", argClasse));
-                return 0;
-            }
-
             if (classeEscolhida == ClasseRaca.MAGO) {
                 jogador.getPersistentData().putBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO, true);
                 enviarMenuElementos(jogador);
-                return 1;
+                afetados++;
+                continue;
             }
 
             aplicarEConfirmar(jogador, classeEscolhida);
@@ -119,8 +142,8 @@ public class ComandoClasse {
 
         if (!jogador.getPersistentData().getBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO)) {
             jogador.sendSystemMessage(
-                Component.literal("Voce nao esta aguardando escolha de elemento.")
-                    .withStyle(ChatFormatting.RED));
+                    Component.literal("Voce nao esta aguardando escolha de elemento.")
+                            .withStyle(ChatFormatting.RED));
             return 0;
         }
 
@@ -141,10 +164,10 @@ public class ComandoClasse {
 
         final ElementoMago elemFinal = elemento;
         origem.sendSuccess(() ->
-            Component.translatable("comando.xenthor_racas.mago_elemento_aplicado",
-                jogador.getDisplayName(),
-                Component.translatable("elemento.xenthor_racas." + elemFinal.id)),
-            true);
+                        Component.translatable("comando.xenthor_racas.mago_elemento_aplicado",
+                                jogador.getDisplayName(),
+                                Component.translatable("elemento.xenthor_racas." + elemFinal.id)),
+                true);
 
         return 1;
     }
@@ -187,7 +210,7 @@ public class ComandoClasse {
 
     private static void enviarMenuElementos(ServerPlayer jogador) {
         jogador.sendSystemMessage(Component.translatable("comando.xenthor_racas.escolha_elemento")
-            .withStyle(ChatFormatting.GOLD));
+                .withStyle(ChatFormatting.GOLD));
 
         MutableComponent linha = Component.empty();
         ElementoMago[] elementos = ElementoMago.values();
@@ -195,13 +218,13 @@ public class ComandoClasse {
         for (int i = 0; i < elementos.length; i++) {
             ElementoMago e = elementos[i];
             MutableComponent botao = Component.literal("[" + capitalize(e.id) + "]")
-                .withStyle(style -> style
-                    .withColor(corDoElemento(e))
-                    .withClickEvent(new ClickEvent(
-                        ClickEvent.Action.RUN_COMMAND,
-                        "/classes_elemento " + e.id
-                    ))
-                );
+                    .withStyle(style -> style
+                            .withColor(corDoElemento(e))
+                            .withClickEvent(new ClickEvent(
+                                    ClickEvent.Action.RUN_COMMAND,
+                                    "/classes_elemento " + e.id
+                            ))
+                    );
 
             linha = linha.append(botao);
             if (i < elementos.length - 1)

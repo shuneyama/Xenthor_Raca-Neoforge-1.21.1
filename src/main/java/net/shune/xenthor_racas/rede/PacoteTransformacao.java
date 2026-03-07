@@ -5,13 +5,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record PacoteAtivarVooCelestial() implements CustomPacketPayload {
+public record PacoteTransformacao() implements CustomPacketPayload {
     public static final ResourceLocation ID_PACOTE =
-            ResourceLocation.fromNamespaceAndPath("xenthor_racas", "ativar_voo_celestial");
-    public static final CustomPacketPayload.Type<PacoteAtivarVooCelestial> TIPO =
+            ResourceLocation.fromNamespaceAndPath("xenthor_racas", "transformacao");
+    public static final CustomPacketPayload.Type<PacoteTransformacao> TIPO =
             new CustomPacketPayload.Type<>(ID_PACOTE);
-    public static final StreamCodec<FriendlyByteBuf, PacoteAtivarVooCelestial> CODEC =
-            StreamCodec.of((buf, pkt) -> {}, buf -> new PacoteAtivarVooCelestial());
+    public static final StreamCodec<FriendlyByteBuf, PacoteTransformacao> CODEC =
+            StreamCodec.of((buf, pkt) -> {}, buf -> new PacoteTransformacao());
 
     @Override public Type<? extends CustomPacketPayload> type() { return TIPO; }
 }

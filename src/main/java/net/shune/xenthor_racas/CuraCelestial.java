@@ -5,13 +5,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = ModPrincipal.ID_MOD)
 public class CuraCelestial {
 
     public static final String TAG_COOLDOWN_CURA = ModPrincipal.ID_MOD + ":celestial_cura_cooldown";

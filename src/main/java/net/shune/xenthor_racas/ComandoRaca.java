@@ -9,6 +9,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.shune.xenthor_racas.rede.RedeXenthor;
 
 import java.util.Collection;
 
@@ -35,6 +36,7 @@ public class ComandoRaca {
     }
 
     private static int executar(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
 
         Collection<ServerPlayer> alvos;
@@ -78,6 +80,7 @@ public class ComandoRaca {
                                     Component.translatable("raca.xenthor_racas." + racaFinal.id)),
                     true);
             afetados++;
+            RedeXenthor.enviarRaca(jogador, racaEscolhida.id);
         }
 
         return afetados;

@@ -2,13 +2,11 @@ package net.shune.xenthor_racas;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.animal.Pig;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,6 +18,11 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @EventBusSubscriber(modid = ModPrincipal.ID_MOD)
 public class MonitorSangue {
+
+    private static final ResourceLocation BOLSA_SANGUE =
+            ResourceLocation.fromNamespaceAndPath("xenthormod", "bolsa_de_sangue");
+    private static final ResourceLocation BOLSA_SANGUE_PROCESSADA =
+            ResourceLocation.fromNamespaceAndPath("xenthormod", "bolsa_de_sangue_processada");
 
     @SubscribeEvent
     public static void aoInteragirComEntidade(PlayerInteractEvent.EntityInteract evento) {
@@ -70,7 +73,7 @@ public class MonitorSangue {
         if (!Raca.VAMPIRO.id.equals(raca) && !Raca.DAMPIRO.id.equals(raca)) return;
 
         ItemStack item = evento.getItemStack();
-        if (ehComida(item)) {
+        if (ehComida(item) && !ehBolsaDeSangue(item)) {
             evento.setCanceled(true);
             jogador.sendSystemMessage(Component.literal("Vampiros so podem beber sangue!")
                     .withStyle(ChatFormatting.DARK_RED));
@@ -83,12 +86,20 @@ public class MonitorSangue {
         String raca = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
         if (!Raca.VAMPIRO.id.equals(raca) && !Raca.DAMPIRO.id.equals(raca)) return;
 
-        if (ehComida(evento.getItem())) {
+        if (ehComida(evento.getItem()) && !ehBolsaDeSangue(evento.getItem())) {
             evento.setCanceled(true);
         }
     }
 
     private static boolean ehComida(ItemStack item) {
         return item.getItem().getFoodProperties(item, null) != null;
+    }
+
+    private static boolean ehBolsaDeSangue(ItemStack item) {
+        ResourceLocation id = item.getItemHolder().unwrapKey()
+                .map(k -> k.location())
+                .orElse(null);
+        if (id == null) return false;
+        return id.equals(BOLSA_SANGUE) || id.equals(BOLSA_SANGUE_PROCESSADA);
     }
 }

@@ -56,6 +56,7 @@ public class ComandoAnalise {
     }
 
     private static int executarAnaliseRacas(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         List<ServerPlayer> jogadores = origem.getServer().getPlayerList().getPlayers();
 
@@ -82,6 +83,7 @@ public class ComandoAnalise {
     }
 
     private static int executarFiltroRaca(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         String argRaca = StringArgumentType.getString(ctx, "raca").toLowerCase();
         Raca racaFiltro = Raca.porId(argRaca);
@@ -121,6 +123,7 @@ public class ComandoAnalise {
     }
 
     private static int executarAnaliseClasses(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         List<ServerPlayer> jogadores = origem.getServer().getPlayerList().getPlayers();
 
@@ -153,6 +156,7 @@ public class ComandoAnalise {
     }
 
     private static int executarFiltroClasse(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         String argClasse = StringArgumentType.getString(ctx, "classe").toLowerCase();
         ClasseRaca classeFiltro = ClasseRaca.porId(argClasse);

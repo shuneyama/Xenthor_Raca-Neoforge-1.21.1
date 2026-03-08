@@ -92,12 +92,14 @@ public class ModPrincipal {
     }
 
     public static void restaurarRaca(ServerPlayer jogador) {
+        if (!LicencaRacas.isLicencaValida()) return;
         String racaSalva = jogador.getPersistentData().getString(TAG_RACA);
 
         if (racaSalva == null || racaSalva.isEmpty()) {
             AtributosRaca.aplicarRaca(jogador, Raca.HUMANO);
             EscalaJogador.aplicarEscala(jogador, Raca.HUMANO);
             jogador.getPersistentData().putString(TAG_RACA, Raca.HUMANO.id);
+            net.shune.xenthor_racas.rede.RedeXenthor.enviarRaca(jogador, Raca.HUMANO.id);
             return;
         }
 
@@ -106,6 +108,7 @@ public class ModPrincipal {
 
         AtributosRaca.aplicarRaca(jogador, raca);
         EscalaJogador.aplicarEscala(jogador, raca);
+        net.shune.xenthor_racas.rede.RedeXenthor.enviarRaca(jogador, raca.id);
 
         switch (raca) {
             case CELESTIAL  -> MonitorCelestial.aplicarEquipeGlowing(jogador);

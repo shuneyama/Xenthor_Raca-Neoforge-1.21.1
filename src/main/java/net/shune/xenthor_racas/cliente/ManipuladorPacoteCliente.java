@@ -4,11 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.shune.xenthor_racas.rede.PacoteClasseEscolhida;
-import net.shune.xenthor_racas.rede.PacoteFormaNegra;
-import net.shune.xenthor_racas.rede.PacoteSyncEspectral;
-import net.shune.xenthor_racas.rede.PacoteSyncTransformacao;
-import net.shune.xenthor_racas.rede.PacoteVooCelestial;
+import net.shune.xenthor_racas.rede.*;
 
 public class ManipuladorPacoteCliente {
 
@@ -64,6 +60,12 @@ public class ManipuladorPacoteCliente {
     public static void aoReceberEspectral(PacoteSyncEspectral pacote, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             EspectralCache.definir(pacote.uuid(), pacote.ativo());
+        });
+    }
+
+    public static void aoReceberRaca(PacoteSyncRaca pacote, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            RacaCache.definir(pacote.uuid(), pacote.racaId());
         });
     }
 }

@@ -75,6 +75,7 @@ public class ComandoClasse {
     }
 
     private static int executarProprio(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         if (!(origem.getEntity() instanceof ServerPlayer jogador)) return 0;
 
@@ -103,6 +104,7 @@ public class ComandoClasse {
     }
 
     private static int executarOutro(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         String argClasse = StringArgumentType.getString(ctx, "classe").toLowerCase();
 
@@ -137,6 +139,7 @@ public class ComandoClasse {
     }
 
     private static int executarElemento(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
         if (!(origem.getEntity() instanceof ServerPlayer jogador)) return 0;
 
@@ -173,6 +176,7 @@ public class ComandoClasse {
     }
 
     private static int executarReset(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
 
         Collection<ServerPlayer> alvos;

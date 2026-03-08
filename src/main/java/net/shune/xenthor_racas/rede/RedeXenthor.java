@@ -23,6 +23,7 @@ public class RedeXenthor {
         reg.playToClient(PacoteVooCelestial.TIPO, PacoteVooCelestial.CODEC, ManipuladorPacoteCliente::aoReceberVooCelestial);
         reg.playToClient(PacoteSyncTransformacao.TIPO, PacoteSyncTransformacao.CODEC, ManipuladorPacoteCliente::aoReceberTransformacao);
         reg.playToClient(PacoteSyncEspectral.TIPO, PacoteSyncEspectral.CODEC, ManipuladorPacoteCliente::aoReceberEspectral);
+        reg.playToClient(PacoteSyncRaca.TIPO, PacoteSyncRaca.CODEC, ManipuladorPacoteCliente::aoReceberRaca);
 
         reg.playToServer(PacotePoderPrimario.TIPO, PacotePoderPrimario.CODEC,
                 (pkt, ctx) -> ctx.enqueueWork(() -> {
@@ -58,5 +59,9 @@ public class RedeXenthor {
 
     public static void enviarEspectral(ServerPlayer jogador, boolean ativo) {
         PacketDistributor.sendToAllPlayers(new PacoteSyncEspectral(jogador.getUUID(), ativo));
+    }
+
+    public static void enviarRaca(ServerPlayer jogador, String racaId) {
+        PacketDistributor.sendToAllPlayers(new PacoteSyncRaca(jogador.getUUID(), racaId));
     }
 }

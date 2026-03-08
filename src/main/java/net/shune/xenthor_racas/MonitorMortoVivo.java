@@ -3,7 +3,6 @@ package net.shune.xenthor_racas;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.scores.PlayerTeam;
@@ -11,14 +10,9 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 @EventBusSubscriber(modid = ModPrincipal.ID_MOD)
 public class MonitorMortoVivo {
@@ -26,7 +20,6 @@ public class MonitorMortoVivo {
     private static final int DURACAO_EFEITO = 400;
     private static final int INTERVALO_TICK = 100;
     private static final String NOME_EQUIPE = "xenthor_morto_vivo_glow";
-    private static final Set<UUID> PROCESSANDO = new HashSet<>();
 
     public static void aplicarEquipeGlowing(ServerPlayer jogador) {
         Scoreboard placar = jogador.serverLevel().getScoreboard();
@@ -51,6 +44,7 @@ public class MonitorMortoVivo {
     public static void aoTickJogador(PlayerTickEvent.Post evento) {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
         if (jogador.tickCount % INTERVALO_TICK != 0) return;
+
         if (!Raca.MORTO_VIVO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
         boolean ehNoite = !jogador.serverLevel().isDay();
@@ -83,28 +77,17 @@ public class MonitorMortoVivo {
             evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
         }
 
+        if (evento.getEffectInstance().getEffect().is(MobEffects.HEAL)) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+            jogador.hurt(jogador.damageSources().magic(), 6.0f);
+        }
+
         if (evento.getEffectInstance().getEffect().is(MobEffects.REGENERATION)) {
             if (!evento.getEffectInstance().isAmbient()) {
                 evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
-                int amplifier = evento.getEffectInstance().getAmplifier();
-                PROCESSANDO.add(jogador.getUUID());
-                jogador.hurt(jogador.damageSources().magic(), 3.0f * (amplifier + 1));
-                PROCESSANDO.remove(jogador.getUUID());
+                jogador.hurt(jogador.damageSources().magic(), 4.0f);
             }
         }
-    }
-
-    @SubscribeEvent
-    public static void aoCurar(LivingHealEvent evento) {
-        if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
-        if (!Raca.MORTO_VIVO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
-        if (PROCESSANDO.contains(jogador.getUUID())) return;
-
-        float cura = evento.getAmount();
-        evento.setCanceled(true);
-        PROCESSANDO.add(jogador.getUUID());
-        jogador.hurt(jogador.damageSources().magic(), cura);
-        PROCESSANDO.remove(jogador.getUUID());
     }
 
     @SubscribeEvent
@@ -114,17 +97,6 @@ public class MonitorMortoVivo {
 
         if (evento.getSource().is(DamageTypeTags.IS_FIRE)) {
             evento.setAmount(evento.getAmount() * 2.0f);
-            return;
-        }
-
-        if (PROCESSANDO.contains(jogador.getUUID())) return;
-
-        if (evento.getSource().is(DamageTypes.MAGIC)) {
-            float dano = evento.getAmount();
-            evento.setCanceled(true);
-            PROCESSANDO.add(jogador.getUUID());
-            jogador.heal(dano);
-            PROCESSANDO.remove(jogador.getUUID());
         }
     }
 }

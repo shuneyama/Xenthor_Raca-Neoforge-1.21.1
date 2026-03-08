@@ -60,36 +60,8 @@ public abstract class MixinBlockState {
                                        CallbackInfoReturnable<VoxelShape> cir) {
         if (cir.getReturnValue().isEmpty()) return;
         try {
-            xenthor_xrayEspectralCliente(pos, cir);
-        } catch (Exception ignored) {}
-    }
-
-    @Unique
-    private void xenthor_xrayEspectralCliente(BlockPos pos, CallbackInfoReturnable<VoxelShape> cir) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-        if (mc.player == null) return;
-        if (!EspectralCache.estaEspectral(mc.player.getUUID())) return;
-
-        BlockPos olhos = BlockPos.containing(mc.player.getEyePosition(mc.getTimer().getGameTimeDeltaPartialTick(false)));
-        int dx = Math.abs(pos.getX() - olhos.getX());
-        int dy = Math.abs(pos.getY() - olhos.getY());
-        int dz = Math.abs(pos.getZ() - olhos.getZ());
-        if (dx <= 1 && dy <= 1 && dz <= 1) {
-            cir.setReturnValue(Shapes.empty());
-        }
-    }
-
-    @Inject(method = "isSuffocating", at = @At("RETURN"), cancellable = true)
-    private void xenthor_semSufocacao(BlockGetter world, BlockPos pos,
-                                      CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValue()) return;
-        try {
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            if (mc.player == null) return;
-            if (EspectralCache.estaEspectral(mc.player.getUUID())) {
-                cir.setReturnValue(false);
-            }
-        } catch (Exception ignored) {}
+            net.shune.xenthor_racas.cliente.VisaoEspectralHelper.processarVisualShape(pos, cir);
+        } catch (Throwable ignored) {}
     }
 
     @Unique
@@ -105,6 +77,9 @@ public abstract class MixinBlockState {
 
     @Unique
     private boolean xenthor_ehFada(Player jogador) {
+        if (jogador.level().isClientSide) {
+            return Raca.FADA.id.equals(net.shune.xenthor_racas.cliente.RacaCache.obter(jogador.getUUID()));
+        }
         String racaId = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
         return Raca.FADA.id.equals(racaId);
     }

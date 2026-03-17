@@ -40,7 +40,6 @@ public class MonitorAlimentacaoAnao {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
         if (!Raca.ANAO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
-        // Bloqueia efeitos de cura instantanea de magia holy via Irons Spellbooks
         var effect = evento.getEffectInstance().getEffect();
         if (effect.is(net.minecraft.world.effect.MobEffects.HEAL)) {
             evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
@@ -49,7 +48,6 @@ public class MonitorAlimentacaoAnao {
 
     private static boolean ehMagiaOuPocaoHoly(ItemStack item) {
         if (item.isEmpty()) return false;
-        // Pocoes de cura (Instant Health)
         if (item.getItem() == net.minecraft.world.item.Items.POTION
                 || item.getItem() == net.minecraft.world.item.Items.SPLASH_POTION
                 || item.getItem() == net.minecraft.world.item.Items.LINGERING_POTION) {

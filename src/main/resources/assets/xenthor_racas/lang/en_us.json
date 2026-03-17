@@ -56,6 +56,7 @@
   "comando.xenthor_racas.raca_desconhecida":      "Raca desconhecida: '%1$s'.",
 
   "effect.xenthor_racas.respiracao_terrestre": "Respiracao Terrestre",
+
   "item.minecraft.potion.effect.respiracao_terrestre": "Pocao de Respiracao Terrestre",
   "item.minecraft.potion.effect.respiracao_terrestre_forte": "Pocao de Respiracao Terrestre II",
   "item.minecraft.potion.effect.respiracao_terrestre_suprema": "Pocao de Respiracao Terrestre III",

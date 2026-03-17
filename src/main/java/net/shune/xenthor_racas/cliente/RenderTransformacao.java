@@ -1,6 +1,7 @@
 package net.shune.xenthor_racas.cliente;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -32,7 +33,17 @@ public class RenderTransformacao {
             Vec3 offset = renderer.getRenderOffset(entidade, partialTick);
             poseStack.pushPose();
             poseStack.translate(offset.x, offset.y, offset.z);
-            renderer.render(entidade, entityYaw, partialTick, poseStack, buffer, packedLight);
+
+            if ("peixe".equals(forma)) {
+                poseStack.translate(0, 0.3, 0);
+                poseStack.mulPose(Axis.YP.rotationDegrees(-entityYaw));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(90));
+                poseStack.mulPose(Axis.YP.rotationDegrees(0));
+                renderer.render(entidade, 0, partialTick, poseStack, buffer, packedLight);
+            } else {
+                renderer.render(entidade, entityYaw, partialTick, poseStack, buffer, packedLight);
+            }
+
             poseStack.popPose();
         } catch (Exception e) {
             return false;
@@ -79,6 +90,12 @@ public class RenderTransformacao {
         } else if ("peixe".equals(forma)) {
             entidade.setXRot(0);
             entidade.xRotO = 0;
+            entidade.yBodyRot = 0;
+            entidade.yBodyRotO = 0;
+            entidade.yHeadRot = 0;
+            entidade.yHeadRotO = 0;
+            entidade.setYRot(0);
+            entidade.yRotO = 0;
         } else {
             entidade.setXRot(jogador.getXRot());
             entidade.xRotO = jogador.xRotO;

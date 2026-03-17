@@ -40,9 +40,7 @@ public class MonitorAlimentacaoCelestial {
 
     private static boolean ehProibido(ItemStack item) {
         if (item.isEmpty()) return false;
-        // Carne podre
         if (item.getItem() == Items.ROTTEN_FLESH) return true;
-        // Pocoes com efeitos de magia negra (sangue, ender, eldritch via Irons)
         if (item.getItem() == Items.POTION
                 || item.getItem() == Items.SPLASH_POTION
                 || item.getItem() == Items.LINGERING_POTION) {

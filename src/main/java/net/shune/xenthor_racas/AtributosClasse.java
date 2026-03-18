@@ -41,13 +41,12 @@ public class AtributosClasse {
         }
     }
 
-    public static void aplicarMagoComElemento(Player jogador, ElementoMago elemento) {
-        aplicarMago(jogador);
+    public static void aplicarElemento(Player jogador, ElementoMago elemento) {
         removerElementoMago(jogador);
         if (!ironsCarregado()) return;
         for (ElementoMago e : ElementoMago.values()) {
             ResourceLocation id = rl("mago.elemento." + e.id);
-            double valor = (e == elemento) ? 0.15 : -0.20;
+            double valor = (e == elemento) ? 0.15 : -0.10;
             ResourceLocation attrLoc = ResourceLocation.parse(e.chaveAtributo);
             addIrons(jogador, attrLoc, id, valor, AttributeModifier.Operation.ADD_VALUE);
         }

@@ -43,7 +43,7 @@ public class MonitorAlimentacaoMortoVivo {
             return;
         }
 
-        if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
+        if (ehComida(item) && !ehPermitido(item)) {
             evento.setCanceled(true);
             jogador.sendSystemMessage(Component.literal("Mortos-Vivos só podem comer alimentos podres ou ossos!")
                     .withStyle(ChatFormatting.DARK_GRAY));
@@ -62,9 +62,15 @@ public class MonitorAlimentacaoMortoVivo {
             return;
         }
 
-        if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
+        if (ehComida(item) && !ehPermitido(item)) {
             evento.setCanceled(true);
         }
+    }
+
+    private static boolean ehPermitido(ItemStack item) {
+        if (ALIMENTOS_PERMITIDOS.contains(item.getItem())) return true;
+        String id = item.getItem().builtInRegistryHolder().key().location().toString();
+        return id.equals("create:builders_tea");
     }
 
     private static boolean ehComida(ItemStack item) {

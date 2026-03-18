@@ -31,7 +31,7 @@ public class MonitorAlimentacaoTritao {
         if (!Raca.TRITAO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
         ItemStack item = evento.getItemStack();
-        if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
+        if (ehComida(item) && !ehPermitido(item)) {
             evento.setCanceled(true);
             jogador.sendSystemMessage(Component.literal("Tritões só podem comer peixes e alimentos do mar!")
                     .withStyle(ChatFormatting.AQUA));
@@ -43,9 +43,15 @@ public class MonitorAlimentacaoTritao {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
         if (!Raca.TRITAO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
-        if (ehComida(evento.getItem()) && !ALIMENTOS_PERMITIDOS.contains(evento.getItem().getItem())) {
+        if (ehComida(evento.getItem()) && !ehPermitido(evento.getItem())) {
             evento.setCanceled(true);
         }
+    }
+
+    private static boolean ehPermitido(ItemStack item) {
+        if (ALIMENTOS_PERMITIDOS.contains(item.getItem())) return true;
+        String id = item.getItem().builtInRegistryHolder().key().location().toString();
+        return id.startsWith("sushigocrafting:") || id.equals("create:builders_tea");
     }
 
     private static boolean ehComida(ItemStack item) {

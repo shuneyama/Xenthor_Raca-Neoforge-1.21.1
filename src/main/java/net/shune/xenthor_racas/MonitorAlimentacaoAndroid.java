@@ -75,8 +75,15 @@ public class MonitorAlimentacaoAndroid {
         }
     }
 
+    private static boolean ehPermitido(ItemStack item) {
+        String id = item.getItem().builtInRegistryHolder().key().location().toString();
+        return id.equals("create:builders_tea");
+    }
+
     private static boolean ehComidaNaoMinerio(ItemStack item) {
+        if (ehPermitido(item)) return false;
         if (MINERIOS.contains(item.getItem())) return false;
+        // bloqueia apenas itens de comida vanilla (não bebidas de outros mods como água)
         return item.getItem().getFoodProperties(item, null) != null
                 && !item.is(Items.POTION)
                 && !item.is(Items.SPLASH_POTION)
@@ -90,6 +97,7 @@ public class MonitorAlimentacaoAndroid {
 
     private static boolean ehPocao(ItemStack item) {
         if (!item.is(Items.POTION) && !item.is(Items.SPLASH_POTION) && !item.is(Items.LINGERING_POTION)) return false;
+        // libera a garrafa d'água (water bottle vanilla)
         var conteudo = item.get(net.minecraft.core.component.DataComponents.POTION_CONTENTS);
         if (conteudo != null && conteudo.potion().isPresent()) {
             var potionKey = conteudo.potion().get().unwrapKey();

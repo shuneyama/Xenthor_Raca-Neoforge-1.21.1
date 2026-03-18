@@ -46,12 +46,15 @@ public class MonitorBiomaElfo {
 
     private static boolean ehBiomaFloresta(String id) {
         return id.contains("forest") || id.contains("taiga") || id.contains("jungle")
-                || id.contains("grove") || id.contains("birch") || id.contains("plains") || id.contains("cherry") || id.contains("mangrove");
+                || id.contains("grove") || id.contains("birch") || id.contains("plains") || id.contains("cherry") || id.contains("mangrove")
+                || id.contains("canadian")  || id.contains("cika")  || id.contains("aspen") || id.contains("coconino") || id.contains("tangle")
+                || id.contains("ebony") || id.contains("howling") || id.contains("ironwood") || id.contains("redwood") || id.contains("sakura")
+                || id.contains("skyris");
     }
 
     private static boolean ehBiomaDeserto(String id) {
         return id.contains("desert") || id.contains("savanna") || id.contains("badlands")
-                || id.contains("mesa");
+                || id.contains("mesa")  || id.contains("atacama");
     }
 
     private static boolean ehNether(net.minecraft.server.level.ServerLevel nivel) {

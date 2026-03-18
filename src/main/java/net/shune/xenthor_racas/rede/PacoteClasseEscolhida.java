@@ -5,7 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record PacoteClasseEscolhida(String idClasse, String idElemento) implements CustomPacketPayload {
+public record PacoteClasseEscolhida(String idClasse, String idElemento, boolean silencioso) implements CustomPacketPayload {
 
     public static final ResourceLocation ID_PACOTE =
             ResourceLocation.fromNamespaceAndPath("xenthor_racas", "classe_escolhida");
@@ -15,11 +15,12 @@ public record PacoteClasseEscolhida(String idClasse, String idElemento) implemen
 
     public static final StreamCodec<FriendlyByteBuf, PacoteClasseEscolhida> CODEC =
             StreamCodec.of(
-                (buf, pkt) -> {
-                    buf.writeUtf(pkt.idClasse());
-                    buf.writeUtf(pkt.idElemento());
-                },
-                buf -> new PacoteClasseEscolhida(buf.readUtf(), buf.readUtf())
+                    (buf, pkt) -> {
+                        buf.writeUtf(pkt.idClasse());
+                        buf.writeUtf(pkt.idElemento());
+                        buf.writeBoolean(pkt.silencioso());
+                    },
+                    buf -> new PacoteClasseEscolhida(buf.readUtf(), buf.readUtf(), buf.readBoolean())
             );
 
     @Override

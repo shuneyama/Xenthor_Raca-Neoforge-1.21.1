@@ -156,19 +156,24 @@ public class ComandoClasse {
                 continue;
             }
 
-            AtributosClasse.aplicarMagoComElemento(jogador, elemento);
+            AtributosClasse.aplicarElemento(jogador, elemento);
             jogador.getPersistentData().putString(ModPrincipal.TAG_ELEMENTO, elemento.id);
 
             RedeXenthor.enviarParaJogador(jogador, classeSalva, elemento.id);
 
-            jogador.sendSystemMessage(Component.literal("Seu elemento foi definido como: " + capitalize(elemento.id))
+            boolean ehGuerreiroMagico = ClasseRaca.GUERREIRO_MAGICO.id.equals(classeSalva);
+            String nomeClasse = ehGuerreiroMagico ? "Guerreiro Mágico" : "Mago";
+
+            jogador.sendSystemMessage(Component.literal("Seu elemento de " + nomeClasse + " foi definido como: " + capitalize(elemento.id))
                     .withStyle(ChatFormatting.GOLD));
 
             final ElementoMago elemFinal = elemento;
+            final String nomeClasseFinal = nomeClasse;
             origem.sendSuccess(() ->
-                            Component.translatable("comando.xenthor_racas.mago_elemento_aplicado",
-                                    jogador.getDisplayName(),
-                                    Component.translatable("elemento.xenthor_racas." + elemFinal.id)),
+                            Component.literal(nomeClasseFinal + " (")
+                                    .append(Component.translatable("elemento.xenthor_racas." + elemFinal.id))
+                                    .append(") aplicado ao jogador ")
+                                    .append(jogador.getDisplayName()),
                     true);
 
             afetados++;

@@ -13,6 +13,11 @@ public class ManipuladorPacoteCliente {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null || mc.player == null) return;
 
+            if (pacote.silencioso()) {
+                HudClasseEscolhida.ativarSilencioso(pacote.idClasse(), pacote.idElemento());
+                return;
+            }
+
             mc.level.playLocalSound(
                     mc.player.getX(), mc.player.getY(), mc.player.getZ(),
                     SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.0f, false);

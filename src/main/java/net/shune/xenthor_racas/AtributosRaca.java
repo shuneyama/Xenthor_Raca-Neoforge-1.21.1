@@ -151,18 +151,18 @@ public class AtributosRaca {
         if (ironsCarregado()) {
             removerIrons(jogador, IRONS_PODER_NAT_RL, PODER_NATUREZA_ELFO_NAT, PODER_NATUREZA_FADA, PODER_NAT_LOBISOMEM);
             removerIrons(jogador, IRONS_PODER_HOLY_RL, PODER_CURA_ELFO_NAT, PODER_HOLY_CELESTIAL);
-            removerIrons(jogador, IRONS_PODER_FOGO_RL, RES_FOGO_ELFO_NAT);
-            removerIrons(jogador, IRONS_RES_FOGO_RL, RES_FOGO_TRITAO, RES_FOGO_MORTO_VIVO, RES_FOGO_VAMPIRO, RES_FOGO_DAMPIRO);
-            removerIrons(jogador, IRONS_PODER_SANGUE_RL, RES_SANGUE_ELFO_NAT, PODER_SANGUE_ELFO_NEG, PODER_SANGUE_CORROMPIDO, PODER_SANGUE_DRAGONIC, PODER_SANGUE_MORTO_VIVO, PODER_SANGUE_VAMPIRO, PODER_SANGUE_DAMPIRO);
-            removerIrons(jogador, IRONS_PODER_ENDER_RL, RES_ENDER_ELFO_NAT, PODER_ENDER_ELFO_NEG, PODER_ENDER_CORROMPIDO, PODER_ENDER_DRAGONIC, PODER_ENDER_VAMPIRO, PODER_ENDER_DAMPIRO);
-            removerIrons(jogador, IRONS_PODER_ELDRI_RL, RES_ELDRITCH_ELFO_NAT, PODER_ELDRITCH_ELFO_NEG, PODER_ELDRI_CORROMPIDO, PODER_ELDRI_DRAGONIC, PODER_ELDRI_VAMPIRO, PODER_ELDRI_DAMPIRO);
+            removerIrons(jogador, IRONS_PODER_FOGO_RL);
+            removerIrons(jogador, IRONS_RES_FOGO_RL, RES_FOGO_ELFO_NAT, RES_FOGO_TRITAO, RES_FOGO_MORTO_VIVO, RES_FOGO_VAMPIRO, RES_FOGO_DAMPIRO);
+            removerIrons(jogador, IRONS_PODER_SANGUE_RL, PODER_SANGUE_ELFO_NEG, PODER_SANGUE_CORROMPIDO, PODER_SANGUE_DRAGONIC, PODER_SANGUE_MORTO_VIVO, PODER_SANGUE_VAMPIRO, PODER_SANGUE_DAMPIRO);
+            removerIrons(jogador, IRONS_PODER_ENDER_RL, PODER_ENDER_ELFO_NEG, PODER_ENDER_CORROMPIDO, PODER_ENDER_DRAGONIC, PODER_ENDER_VAMPIRO, PODER_ENDER_DAMPIRO);
+            removerIrons(jogador, IRONS_PODER_ELDRI_RL, PODER_ELDRITCH_ELFO_NEG, PODER_ELDRI_CORROMPIDO, PODER_ELDRI_DRAGONIC, PODER_ELDRI_VAMPIRO, PODER_ELDRI_DAMPIRO);
             removerIrons(jogador, IRONS_PODER_GELO_RL, PODER_GELO_TRITAO);
             removerIrons(jogador, IRONS_PODER_RAIO_RL);
             removerIrons(jogador, IRONS_RES_RAIO_RL, RES_RAIO_BESTIAL_AEREO, RES_RAIO_ANDROID);
             removerIrons(jogador, IRONS_RES_HOLY_RL, RES_HOLY_ELFO_NEG, RES_HOLY_CORROMPIDO, RES_HOLY_OGRO, RES_HOLY_VAMPIRO, RES_HOLY_DAMPIRO, RES_HOLY_MORTO_VIVO, RES_HOLY_LOBISOMEM, RES_HOLY_AMALDICOADO, RES_HOLY_ESPIRITO);
-            removerIrons(jogador, IRONS_RES_SANGUE_RL, RES_SANGUE_CELESTIAL);
-            removerIrons(jogador, IRONS_RES_ENDER_RL, RES_ENDER_CELESTIAL);
-            removerIrons(jogador, IRONS_RES_ELDRITCH_RL, RES_ELDRITCH_CELESTIAL);
+            removerIrons(jogador, IRONS_RES_SANGUE_RL, RES_SANGUE_ELFO_NAT, RES_SANGUE_CELESTIAL);
+            removerIrons(jogador, IRONS_RES_ENDER_RL, RES_ENDER_ELFO_NAT, RES_ENDER_CELESTIAL);
+            removerIrons(jogador, IRONS_RES_ELDRITCH_RL, RES_ELDRITCH_ELFO_NAT, RES_ELDRITCH_CELESTIAL);
             removerIrons(jogador, IRONS_RES_MAGICA_RL, RES_GELO_ANDROID);
         }
     }
@@ -170,12 +170,12 @@ public class AtributosRaca {
     private static void aplicarElfoNatural(Player jogador) {
         addVanilla(jogador, Attributes.MOVEMENT_SPEED, VELOCIDADE_ELFO_NAT, 0.10, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         if (ironsCarregado()) {
-            addIrons(jogador, IRONS_PODER_NAT_RL, PODER_NATUREZA_ELFO_NAT, 0.10, AttributeModifier.Operation.ADD_VALUE);
-            addIrons(jogador, IRONS_PODER_HOLY_RL, PODER_CURA_ELFO_NAT, 0.10, AttributeModifier.Operation.ADD_VALUE);
-            addIrons(jogador, IRONS_PODER_FOGO_RL, RES_FOGO_ELFO_NAT, -0.05, AttributeModifier.Operation.ADD_VALUE);
-            addIrons(jogador, IRONS_PODER_SANGUE_RL, RES_SANGUE_ELFO_NAT, -0.05, AttributeModifier.Operation.ADD_VALUE);
-            addIrons(jogador, IRONS_PODER_ENDER_RL, RES_ENDER_ELFO_NAT, -0.05, AttributeModifier.Operation.ADD_VALUE);
-            addIrons(jogador, IRONS_PODER_ELDRI_RL, RES_ELDRITCH_ELFO_NAT, -0.05, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_PODER_NAT_RL,    PODER_NATUREZA_ELFO_NAT, 0.10, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_PODER_HOLY_RL,   PODER_CURA_ELFO_NAT,     0.10, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_RES_FOGO_RL,     RES_FOGO_ELFO_NAT,      -0.05, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_RES_SANGUE_RL,   RES_SANGUE_ELFO_NAT,    -0.05, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_RES_ENDER_RL,    RES_ENDER_ELFO_NAT,     -0.05, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_RES_ELDRITCH_RL, RES_ELDRITCH_ELFO_NAT,  -0.05, AttributeModifier.Operation.ADD_VALUE);
         }
     }
 
@@ -192,7 +192,7 @@ public class AtributosRaca {
 
     private static void aplicarAnao(Player jogador) {
         addVanilla(jogador, Attributes.MAX_HEALTH, VIDA_ANAO, 10.0, AttributeModifier.Operation.ADD_VALUE);
-        addVanilla(jogador, Attributes.BLOCK_BREAK_SPEED, MINERACAO_ANAO, 0.20, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addVanilla(jogador, Attributes.BLOCK_BREAK_SPEED, MINERACAO_ANAO, 0.20, AttributeModifier.Operation.ADD_VALUE);
         addVanilla(jogador, Attributes.LUCK, LUCK_ANAO, 2.0, AttributeModifier.Operation.ADD_VALUE);
     }
 
@@ -216,12 +216,12 @@ public class AtributosRaca {
 
     private static void aplicarBestial(Player jogador) {
         addVanilla(jogador, Attributes.MOVEMENT_SPEED, VELOCIDADE_BESTIAL, 0.10, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
-        addVanilla(jogador, Attributes.ARMOR, ARMADURA_BESTIAL, -0.10, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addVanilla(jogador, Attributes.ARMOR, ARMADURA_BESTIAL, -2, AttributeModifier.Operation.ADD_VALUE);
     }
 
     private static void aplicarBestialAereo(Player jogador) {
         addVanilla(jogador, Attributes.MAX_HEALTH, VIDA_BESTIAL_AEREO, -4.0, AttributeModifier.Operation.ADD_VALUE);
-        addVanilla(jogador, Attributes.ARMOR, ARMADURA_BESTIAL_AEREO, -0.30, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addVanilla(jogador, Attributes.ARMOR, ARMADURA_BESTIAL_AEREO, -6, AttributeModifier.Operation.ADD_VALUE);
         if (ironsCarregado()) {
             addIrons(jogador, IRONS_RES_RAIO_RL, RES_RAIO_BESTIAL_AEREO, -0.10, AttributeModifier.Operation.ADD_VALUE);
         }
@@ -229,14 +229,14 @@ public class AtributosRaca {
 
     private static void aplicarTritao(Player jogador) {
         if (ironsCarregado()) {
-            addIrons(jogador, IRONS_PODER_GELO_RL, PODER_GELO_TRITAO,  0.10, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_PODER_GELO_RL, PODER_GELO_TRITAO,  0.20, AttributeModifier.Operation.ADD_VALUE);
             addIrons(jogador, IRONS_RES_FOGO_RL,   RES_FOGO_TRITAO,   -0.20, AttributeModifier.Operation.ADD_VALUE);
         }
     }
 
     private static void aplicarFada(Player jogador) {
         addVanilla(jogador, Attributes.MAX_HEALTH, VIDA_FADA, -10.0, AttributeModifier.Operation.ADD_VALUE);
-        addVanilla(jogador, Attributes.ARMOR, ARMADURA_FADA, -0.15, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addVanilla(jogador, Attributes.ARMOR, ARMADURA_FADA, -3, AttributeModifier.Operation.ADD_VALUE);
         if (ironsCarregado()) {
             addIrons(jogador, IRONS_PODER_NAT_RL, PODER_NATUREZA_FADA, 0.10, AttributeModifier.Operation.ADD_VALUE);
         }

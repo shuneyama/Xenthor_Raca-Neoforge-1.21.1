@@ -5,9 +5,9 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.shune.xenthor_racas.GlowingRaca;
 import net.shune.xenthor_racas.PoderRaca;
 import net.shune.xenthor_racas.PoderTransformacao;
+import net.shune.xenthor_racas.GlowingRaca;
 import net.shune.xenthor_racas.cliente.ManipuladorPacoteCliente;
 
 public class RedeXenthor {
@@ -48,7 +48,11 @@ public class RedeXenthor {
     }
 
     public static void enviarParaJogador(ServerPlayer jogador, String idClasse, String idElemento) {
-        PacketDistributor.sendToPlayer(jogador, new PacoteClasseEscolhida(idClasse, idElemento));
+        PacketDistributor.sendToPlayer(jogador, new PacoteClasseEscolhida(idClasse, idElemento, false));
+    }
+
+    public static void enviarParaJogadorSilencioso(ServerPlayer jogador, String idClasse, String idElemento) {
+        PacketDistributor.sendToPlayer(jogador, new PacoteClasseEscolhida(idClasse, idElemento, true));
     }
 
     public static void enviarFormaNegra(ServerPlayer jogador, boolean ativa) {

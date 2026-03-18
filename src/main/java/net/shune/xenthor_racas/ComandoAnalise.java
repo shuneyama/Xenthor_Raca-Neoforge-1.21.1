@@ -129,7 +129,7 @@ public class ComandoAnalise {
             String classeId = jogador.getPersistentData().getString(ModPrincipal.TAG_CLASSE);
             String elementoId = jogador.getPersistentData().getString(ModPrincipal.TAG_ELEMENTO);
 
-            if (!ClasseRaca.MAGO.id.equals(classeId)) continue;
+            if (!ClasseRaca.MAGO.id.equals(classeId) && !ClasseRaca.GUERREIRO_MAGICO.id.equals(classeId)) continue;
 
             String nomeElemento = (elementoId != null && !elementoId.isEmpty()) ? elementoId : "sem elemento";
             MutableComponent linha = Component.literal(jogador.getName().getString() + " - ")

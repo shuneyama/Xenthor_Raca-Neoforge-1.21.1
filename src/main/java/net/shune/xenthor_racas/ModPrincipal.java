@@ -138,16 +138,20 @@ public class ModPrincipal {
         ClasseRaca classe = ClasseRaca.porId(classeSalva);
         if (classe == null) return;
 
-        if (classe == ClasseRaca.MAGO) {
-            String elementoSalvo = jogador.getPersistentData().getString(TAG_ELEMENTO);
+        AtributosClasse.aplicarClasse(jogador, classe);
+
+        String elementoSalvo = "";
+        if (classe == ClasseRaca.MAGO || classe == ClasseRaca.GUERREIRO_MAGICO) {
+            elementoSalvo = jogador.getPersistentData().getString(TAG_ELEMENTO);
             ElementoMago elemento = ElementoMago.porId(elementoSalvo);
             if (elemento != null) {
-                AtributosClasse.aplicarMagoComElemento(jogador, elemento);
-                return;
+                AtributosClasse.aplicarElemento(jogador, elemento);
+            } else {
+                elementoSalvo = "";
             }
         }
 
-        AtributosClasse.aplicarClasse(jogador, classe);
+        net.shune.xenthor_racas.rede.RedeXenthor.enviarParaJogadorSilencioso(jogador, classeSalva, elementoSalvo);
     }
 
     private static void enviarMensagemEscolhaClasse(ServerPlayer jogador) {
@@ -162,7 +166,7 @@ public class ModPrincipal {
                 Component.literal("Use o comando abaixo para jogar no seu estilo:")
                         .withStyle(ChatFormatting.GRAY));
 
-        MutableComponent botao = Component.literal("[/classes <classe>]")
+        MutableComponent botao = Component.literal("[ /classes @s <classe> ]")
                 .withStyle(style -> style
                         .withColor(0x55FFFF)
                         .withBold(true)

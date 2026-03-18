@@ -5,8 +5,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.fml.ModList;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
@@ -50,8 +52,9 @@ public class MonitorVampiro {
         boolean ehNoite = !jogador.serverLevel().isDay();
         boolean temSol = jogador.serverLevel().isDay()
                 && jogador.serverLevel().canSeeSky(jogador.blockPosition());
+        boolean comGuardaChuva = temGuardaChuva(jogador);
 
-        if (temSol && jogador.tickCount % 20 == 0) {
+        if (temSol && !comGuardaChuva && jogador.tickCount % 20 == 0) {
             jogador.hurt(jogador.damageSources().onFire(), 2.0f);
         }
 
@@ -68,18 +71,29 @@ public class MonitorVampiro {
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, DURACAO_EFEITO, 1, true, false), null);
         }
 
-        if (!regenBloqueada && !temSol) {
-            if (ehNoite) {
+        if (!regenBloqueada && (!temSol || comGuardaChuva)) {
+            if (ehNoite || comGuardaChuva) {
                 jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 2, true, false), null);
             } else {
                 jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 1, true, false), null);
             }
-        } else if (temSol) {
+        } else if (temSol && !comGuardaChuva) {
             var regen = jogador.getEffect(MobEffects.REGENERATION);
             if (regen != null && regen.isAmbient()) {
                 jogador.removeEffect(MobEffects.REGENERATION);
             }
         }
+    }
+
+    private static boolean temGuardaChuva(ServerPlayer jogador) {
+        if (!ModList.get().isLoaded("artifacts")) return false;
+        return ehUmbrella(jogador.getItemInHand(InteractionHand.MAIN_HAND))
+                || ehUmbrella(jogador.getItemInHand(InteractionHand.OFF_HAND));
+    }
+
+    private static boolean ehUmbrella(ItemStack item) {
+        if (item.isEmpty()) return false;
+        return item.getItem().builtInRegistryHolder().key().location().toString().equals("artifacts:umbrella");
     }
 
     @SubscribeEvent

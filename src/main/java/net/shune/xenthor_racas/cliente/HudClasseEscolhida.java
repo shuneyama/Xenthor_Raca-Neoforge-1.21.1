@@ -44,6 +44,13 @@ public class HudClasseEscolhida {
         itemClasse   = resolverItem(idClasse);
     }
 
+    public static void ativarSilencioso(String idClasse, String idElemento) {
+        ativo        = false;
+        nomeClasse   = idClasse;
+        nomeElemento = idElemento;
+        itemClasse   = resolverItem(idClasse);
+    }
+
     @SubscribeEvent
     public static void aoRenderizarHud(RenderGuiLayerEvent.Post evento) {
         if (!evento.getName().equals(VanillaGuiLayers.HOTBAR)) return;
@@ -170,10 +177,12 @@ public class HudClasseEscolhida {
     private static String traduzirClasse() {
         return switch (nomeClasse) {
             case "guerreiro"        -> "Guerreiro";
-            case "guerreiro_magico" -> "Guerreiro Mágico";
+            case "guerreiro_magico" -> nomeElemento.isEmpty()
+                    ? "Guerreiro Mágico"
+                    : "Guerreiro Mágico (" + capitalize(nomeElemento) + ")";
             case "mago"             -> nomeElemento.isEmpty()
-                                        ? "Mago"
-                                        : "Mago (" + capitalize(nomeElemento) + ")";
+                    ? "Mago"
+                    : "Mago (" + capitalize(nomeElemento) + ")";
             default -> nomeClasse;
         };
     }

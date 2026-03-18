@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Cod;
+import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.ambient.Bat;
 
@@ -52,6 +53,7 @@ public class TransformacaoCache {
             case "morcego" -> new Bat(EntityType.BAT, mc.level);
             case "lobo" -> new Wolf(EntityType.WOLF, mc.level);
             case "peixe" -> new Cod(EntityType.COD, mc.level);
+            case "raposa" -> criarRaposaBranca(mc);
             default -> null;
         };
 
@@ -59,5 +61,11 @@ public class TransformacaoCache {
             ENTIDADES.put(uuid, entidade);
         }
         return entidade;
+    }
+
+    private static Fox criarRaposaBranca(Minecraft mc) {
+        Fox raposa = new Fox(EntityType.FOX, mc.level);
+        raposa.setVariant(Fox.Type.SNOW);
+        return raposa;
     }
 }

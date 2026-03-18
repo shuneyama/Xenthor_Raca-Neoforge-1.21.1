@@ -59,6 +59,7 @@ public class ModPrincipal {
     @SubscribeEvent
     public void aoRegistrarComandos(RegisterCommandsEvent evento) {
         ComandoClasse.registrar(evento.getDispatcher());
+        ComandoClasse.registrarElemento(evento.getDispatcher());
         ComandoRaca.registrar(evento.getDispatcher());
         ComandoAnalise.registrar(evento.getDispatcher(), "shune");
         ComandoAnalise.registrar(evento.getDispatcher(), "xenthor");
@@ -155,13 +156,13 @@ public class ModPrincipal {
                 Component.literal("⚔ Xenthor SMP ⚔")
                         .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         jogador.sendSystemMessage(
-                Component.literal("Voce ainda nao escolheu uma classe!")
+                Component.literal("Você ainda não escolheu uma classe!")
                         .withStyle(ChatFormatting.YELLOW));
         jogador.sendSystemMessage(
                 Component.literal("Use o comando abaixo para jogar no seu estilo:")
                         .withStyle(ChatFormatting.GRAY));
 
-        MutableComponent botao = Component.literal("[ /classes @s <classe> ]")
+        MutableComponent botao = Component.literal("[/classes <classe>]")
                 .withStyle(style -> style
                         .withColor(0x55FFFF)
                         .withBold(true)

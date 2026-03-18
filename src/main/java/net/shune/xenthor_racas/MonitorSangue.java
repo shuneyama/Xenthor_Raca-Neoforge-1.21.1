@@ -40,7 +40,7 @@ public class MonitorSangue {
             jogador.getInventory().placeItemBackInInventory(new ItemStack(Items.POTION));
             jogador.serverLevel().playSound(null, jogador.getX(), jogador.getY(), jogador.getZ(),
                     SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 1.0f, 0.8f);
-            jogador.sendSystemMessage(Component.literal("Voce coletou sangue em um frasco!")
+            jogador.sendSystemMessage(Component.literal("Você coletou sangue em um frasco!")
                     .withStyle(ChatFormatting.DARK_RED));
             alvo.hurt(jogador.damageSources().playerAttack(jogador), 2.0f);
             return;
@@ -75,7 +75,7 @@ public class MonitorSangue {
         ItemStack item = evento.getItemStack();
         if (ehComida(item) && !ehBolsaDeSangue(item)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Vampiros so podem beber sangue!")
+            jogador.sendSystemMessage(Component.literal("Vampiros só podem beber sangue!")
                     .withStyle(ChatFormatting.DARK_RED));
         }
     }

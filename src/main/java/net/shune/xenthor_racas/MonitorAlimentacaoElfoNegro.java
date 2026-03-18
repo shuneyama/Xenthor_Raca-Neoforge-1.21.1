@@ -38,7 +38,7 @@ public class MonitorAlimentacaoElfoNegro {
         if (ITENS_SAGRADOS_PROIBIDOS.contains(item.getItem())) {
             evento.setCanceled(true);
             jogador.sendSystemMessage(
-                    Component.literal("Elfos Negros nao podem consumir itens sagrados!")
+                    Component.literal("Elfos Negros não podem consumir itens sagrados!")
                             .withStyle(ChatFormatting.DARK_RED));
             return;
         }
@@ -46,7 +46,7 @@ public class MonitorAlimentacaoElfoNegro {
         if (ehPocaoDeCura(item)) {
             evento.setCanceled(true);
             jogador.sendSystemMessage(
-                    Component.literal("Elfos Negros nao podem usar pocoes de cura!")
+                    Component.literal("Elfos Negros não podem usar poções de cura!")
                             .withStyle(ChatFormatting.DARK_RED));
         }
     }

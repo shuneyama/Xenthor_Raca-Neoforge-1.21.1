@@ -20,7 +20,7 @@ public class MonitorAlimentacaoAnao {
 
         if (ehMagiaOuPocaoHoly(evento.getItemStack())) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Anoes nao podem usar magia divina!")
+            jogador.sendSystemMessage(Component.literal("Anões não podem usar magia divina!")
                     .withStyle(ChatFormatting.DARK_RED));
         }
     }

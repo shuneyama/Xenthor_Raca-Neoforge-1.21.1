@@ -20,7 +20,7 @@ public class MonitorTritao {
     private static final int INTERVALO_TICK = 100;
     private static final String NOME_EQUIPE = "xenthor_tritao_glow";
     private static final String TAG_AR_TICKS = ModPrincipal.ID_MOD + ":tritao_ar_ticks";
-    private static final int LIMITE_AR_TICKS = 20 * 60 * 2;
+    private static final int LIMITE_AR_TICKS = 20 * 60 * 3;
 
     public static void aplicarEquipeGlowing(ServerPlayer jogador) {
         Scoreboard placar = jogador.serverLevel().getScoreboard();
@@ -80,7 +80,7 @@ public class MonitorTritao {
                             Component.literal("Ar restante: " + tempo).withStyle(cor), true);
                 } else {
                     jogador.displayClientMessage(
-                            Component.literal("Voce esta sufocando!").withStyle(ChatFormatting.DARK_RED), true);
+                            Component.literal("Você está sufocando!").withStyle(ChatFormatting.DARK_RED), true);
                     if (ticksForaDaAgua % 20 == 0) {
                         jogador.hurt(jogador.damageSources().drown(), 2.0f);
                     }
@@ -90,18 +90,21 @@ public class MonitorTritao {
 
         if (jogador.tickCount % INTERVALO_TICK != 0) return;
 
+        jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 1, true, false), null);
+
         if (naAgua) {
-            jogador.forceAddEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, DURACAO_EFEITO, 0, true, false), null);
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, DURACAO_EFEITO, 2, true, false), null);
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, DURACAO_EFEITO, 0, true, false), null);
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, DURACAO_EFEITO, 1, true, false), null);
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, DURACAO_EFEITO, 1, true, false), null);
-            jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 1, true, false), null);
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 2, true, false), null);
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, DURACAO_EFEITO, 1, true, false), null);
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 1, true, false), null);
         }
 
         if (estaChovendo) {
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, DURACAO_EFEITO, 1, true, false), null);
-            jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 1, true, false), null);
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 2, true, false), null);
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, DURACAO_EFEITO, 1, true, false), null);
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 1, true, false), null);
         }

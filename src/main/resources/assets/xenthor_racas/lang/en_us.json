@@ -42,6 +42,7 @@
   "key.xenthor_racas.poder_primario":  "Poder Primario",
   "key.xenthor_racas.poder_secundario": "Poder Secundario",
   "key.xenthor_racas.transformacao": "Transformacao",
+  "key.xenthor_racas.glowing": "Toggle Glow",
   "key.categories.xenthor_racas":      "Xenthor SMP",
 
   "comando.xenthor_racas.classe_aplicada":        "Classe %2$s aplicada ao jogador %1$s.",

@@ -38,14 +38,14 @@ public class MonitorAlimentacaoMortoVivo {
 
         if (ehPocaoDeCuraOuRegen(item)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Mortos-Vivos nao podem beber pocoes de cura!")
+            jogador.sendSystemMessage(Component.literal("Mortos-Vivos não podem beber poções de cura!")
                     .withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
 
         if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Mortos-Vivos so podem comer alimentos podres ou ossos!")
+            jogador.sendSystemMessage(Component.literal("Mortos-Vivos só podem comer alimentos podres ou ossos!")
                     .withStyle(ChatFormatting.DARK_GRAY));
         }
     }

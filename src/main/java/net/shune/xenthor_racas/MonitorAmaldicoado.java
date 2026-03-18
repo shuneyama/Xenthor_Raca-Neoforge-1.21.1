@@ -14,7 +14,12 @@ import net.minecraft.world.scores.Team;
 import net.minecraft.core.Holder;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -25,6 +30,8 @@ import java.util.Random;
 @EventBusSubscriber(modid = ModPrincipal.ID_MOD)
 public class MonitorAmaldicoado {
 
+    private static final int DURACAO_EFEITO = 400;
+    private static final int INTERVALO_TICK = 100;
     private static final int INTERVALO_BUFF = 20 * 60 * 10;
     private static final int DURACAO_BUFF = 20 * 60 * 10;
     private static final String NOME_EQUIPE = "xenthor_amaldicoado_glow";
@@ -68,6 +75,15 @@ public class MonitorAmaldicoado {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
         if (!Raca.AMALDICOADO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
+        if (jogador.isUnderWater()) {
+            jogador.setAirSupply(jogador.getMaxAirSupply());
+        }
+
+        if (jogador.tickCount % INTERVALO_TICK == 0) {
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 2, true, false), null);
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 1, true, false), null);
+        }
+
         long agora = jogador.serverLevel().getGameTime();
         long proximo = jogador.getPersistentData().getLong(TAG_PROXIMO_BUFF);
 
@@ -78,7 +94,7 @@ public class MonitorAmaldicoado {
             int nivel = RNG.nextInt(3);
             jogador.forceAddEffect(new MobEffectInstance(buff, DURACAO_BUFF, nivel, false, true), null);
 
-            jogador.sendSystemMessage(Component.literal("A maldicao te concedeu um poder temporario...")
+            jogador.sendSystemMessage(Component.literal("A maldição te concedeu um poder temporário...")
                     .withStyle(ChatFormatting.DARK_PURPLE));
         }
     }
@@ -90,7 +106,16 @@ public class MonitorAmaldicoado {
 
         if (evento.getEffectInstance().getEffect().is(MobEffects.HEAL)) {
             evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
-            jogador.hurt(jogador.damageSources().magic(), 6.0f);
+        }
+
+        if (evento.getEffectInstance().getEffect().is(MobEffects.REGENERATION)) {
+            if (!evento.getEffectInstance().isAmbient()) {
+                evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+            }
+        }
+
+        if (evento.getEffectInstance().getEffect().is(MobEffects.POISON)) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
         }
     }
 
@@ -102,7 +127,7 @@ public class MonitorAmaldicoado {
         ItemStack item = evento.getItemStack();
         if (item.is(Items.GOLDEN_APPLE) || item.is(Items.ENCHANTED_GOLDEN_APPLE) || item.is(Items.GOLDEN_CARROT)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Amaldicoados nao podem consumir alimentos dourados!")
+            jogador.sendSystemMessage(Component.literal("Amaldiçoados não podem consumir alimentos dourados!")
                     .withStyle(ChatFormatting.DARK_PURPLE));
         }
     }
@@ -115,6 +140,28 @@ public class MonitorAmaldicoado {
         ItemStack item = evento.getItem();
         if (item.is(Items.GOLDEN_APPLE) || item.is(Items.ENCHANTED_GOLDEN_APPLE) || item.is(Items.GOLDEN_CARROT)) {
             evento.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void aoDanoRecebido(LivingIncomingDamageEvent evento) {
+        if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
+        if (!Raca.AMALDICOADO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
+
+        var atacante = evento.getSource().getDirectEntity();
+        if (atacante instanceof LivingEntity atacanteVivo) {
+            ItemStack arma = atacanteVivo.getMainHandItem();
+            if (!arma.isEmpty()) {
+                var smiteKey = jogador.serverLevel().registryAccess()
+                        .registryOrThrow(Registries.ENCHANTMENT)
+                        .getHolder(ResourceLocation.withDefaultNamespace("smite"));
+                if (smiteKey.isPresent()) {
+                    int nivelSmite = EnchantmentHelper.getItemEnchantmentLevel(smiteKey.get(), arma);
+                    if (nivelSmite > 0) {
+                        evento.setAmount(evento.getAmount() + nivelSmite * 2.5f);
+                    }
+                }
+            }
         }
     }
 }

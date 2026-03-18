@@ -30,7 +30,7 @@ public class CuraCelestial {
         if (temCooldown(jogador)) {
             long segundos = ticksRestantes(jogador) / 20;
             jogador.sendSystemMessage(
-                Component.literal("Cura em cooldown! Aguarde " + segundos + "s.")
+                Component.literal("Cura em recarga! Aguarde " + segundos + "s.")
                     .withStyle(ChatFormatting.GOLD));
             return;
         }
@@ -45,7 +45,7 @@ public class CuraCelestial {
         for (ServerPlayer aliado : aliados) {
             aliado.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 10, 2, false, true), null);
             aliado.forceAddEffect(new MobEffectInstance(MobEffects.ABSORPTION,   20 * 15, 1, false, true), null);
-            aliado.sendSystemMessage(Component.literal("Voce foi abencado pelo Celestial!")
+            aliado.sendSystemMessage(Component.literal("Você foi abençoado pelo Celestial!")
                     .withStyle(ChatFormatting.GOLD));
             curados++;
         }
@@ -54,7 +54,7 @@ public class CuraCelestial {
             jogador.serverLevel().getGameTime() + COOLDOWN_TICKS);
 
         if (curados > 0) {
-            jogador.sendSystemMessage(Component.literal("Voce curou " + curados + " aliado(s)!")
+            jogador.sendSystemMessage(Component.literal("Você curou " + curados + " aliado(s)!")
                     .withStyle(ChatFormatting.YELLOW));
         } else {
             jogador.sendSystemMessage(Component.literal("Nenhum aliado proximo para curar.")

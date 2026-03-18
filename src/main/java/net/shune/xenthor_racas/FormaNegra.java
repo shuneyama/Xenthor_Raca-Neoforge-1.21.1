@@ -50,7 +50,7 @@ public class FormaNegra {
 
         if (temSol) {
             jogador.sendSystemMessage(
-                    Component.literal("Voce nao pode usar a Forma Negra sob a luz do sol!")
+                    Component.literal("Você não pode usar a Forma Negra sob a luz do sol!")
                             .withStyle(ChatFormatting.DARK_RED));
             return;
         }
@@ -58,7 +58,7 @@ public class FormaNegra {
         if (temCooldown(jogador)) {
             long segundos = ticksRestantesCooldown(jogador) / 20;
             jogador.sendSystemMessage(
-                    Component.literal("Forma Negra em cooldown! Aguarde " + segundos + "s.")
+                    Component.literal("Forma Negra em recarga! Aguarde " + segundos + "s.")
                             .withStyle(ChatFormatting.GRAY));
             return;
         }
@@ -76,7 +76,7 @@ public class FormaNegra {
                 MobEffects.INVISIBILITY, (int) DURACAO_TICKS, 0, false, false), null);
 
         jogador.sendSystemMessage(
-                Component.literal("Forma Negra ativada! Duracao: 2 minutos.")
+                Component.literal("Forma Negra ativada! Duração: 2 minutos.")
                         .withStyle(ChatFormatting.DARK_PURPLE));
 
         net.shune.xenthor_racas.rede.RedeXenthor.enviarFormaNegra(jogador, true);
@@ -132,7 +132,7 @@ public class FormaNegra {
         if (!estaAtiva(jogador)) return;
         evento.setCanceled(true);
         jogador.sendSystemMessage(
-                Component.literal("Voce nao pode atacar na Forma Negra!")
+                Component.literal("Você não pode atacar na Forma Negra!")
                         .withStyle(ChatFormatting.DARK_RED));
     }
 

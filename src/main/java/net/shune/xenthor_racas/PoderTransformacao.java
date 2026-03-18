@@ -27,7 +27,12 @@ public class PoderTransformacao {
         Raca raca = Raca.porId(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA));
         if (raca == null) return;
 
-        if (raca != Raca.VAMPIRO && raca != Raca.DAMPIRO && raca != Raca.LOBISOMEM && raca != Raca.TRITAO) return;
+        if (raca == Raca.ELFO_NEGRO) {
+            FormaNegra.tentar(jogador);
+            return;
+        }
+
+        if (raca != Raca.VAMPIRO && raca != Raca.DAMPIRO && raca != Raca.LOBISOMEM && raca != Raca.TRITAO && raca != Raca.KITSUNE) return;
 
         if (jogador.getPersistentData().getBoolean(TAG_TRANSFORMADO)) {
             desativar(jogador);
@@ -38,13 +43,14 @@ public class PoderTransformacao {
             case VAMPIRO -> "morcego";
             case DAMPIRO, LOBISOMEM -> "lobo";
             case TRITAO -> "peixe";
+            case KITSUNE -> "raposa";
             default -> "";
         };
 
         if (forma.isEmpty()) return;
 
         if (forma.equals("peixe") && !jogador.isInWater()) {
-            jogador.sendSystemMessage(Component.literal("Voce so pode se transformar em peixe dentro da agua!")
+            jogador.sendSystemMessage(Component.literal("Você só pode se transformar em peixe dentro da água!")
                     .withStyle(ChatFormatting.AQUA));
             return;
         }
@@ -73,10 +79,14 @@ public class PoderTransformacao {
             case "peixe" -> {
                 aplicarEscala(jogador, -0.60);
             }
+            case "raposa" -> {
+                aplicarEscala(jogador, -0.50);
+                aplicarVelocidade(jogador, 0.10);
+            }
         }
 
         net.shune.xenthor_racas.rede.RedeXenthor.enviarTransformacao(jogador, forma);
-        jogador.sendSystemMessage(Component.literal("Voce se transformou em " + forma + "!")
+        jogador.sendSystemMessage(Component.literal("Você se transformou em " + forma + "!")
                 .withStyle(ChatFormatting.DARK_PURPLE));
     }
 
@@ -97,7 +107,7 @@ public class PoderTransformacao {
         }
 
         net.shune.xenthor_racas.rede.RedeXenthor.enviarTransformacao(jogador, "");
-        jogador.sendSystemMessage(Component.literal("Voce voltou ao normal.")
+        jogador.sendSystemMessage(Component.literal("Você voltou ao normal.")
                 .withStyle(ChatFormatting.GRAY));
     }
 
@@ -163,7 +173,7 @@ public class PoderTransformacao {
                 if (!jogador.isInWater()) {
                     if (jogador.tickCount % 20 == 0) {
                         jogador.hurt(jogador.damageSources().drown(), 4.0f);
-                        jogador.sendSystemMessage(Component.literal("Voce esta sufocando fora da agua!")
+                        jogador.sendSystemMessage(Component.literal("Você está sufocando fora da água!")
                                 .withStyle(ChatFormatting.RED));
                     }
                 }

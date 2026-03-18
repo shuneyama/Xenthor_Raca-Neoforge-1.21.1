@@ -1,6 +1,7 @@
 package net.shune.xenthor_racas;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -8,6 +9,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.ModList;
+
+import java.util.Optional;
 
 public class AtributosClasse {
 
@@ -25,9 +28,9 @@ public class AtributosClasse {
     private static final ResourceLocation PODER_GUERREIRO           = rl("guerreiro.poder_magico");
     private static final ResourceLocation PODER_MAGO                = rl("mago.poder_magico");
 
-    private static final String IRONS_MANA       = "irons_spellbooks:max_mana";
-    private static final String IRONS_RES_MAGICA = "irons_spellbooks:magic_resistance";
-    private static final String IRONS_PODER      = "irons_spellbooks:spell_power";
+    private static final ResourceLocation IRONS_MANA_RL       = ResourceLocation.parse("irons_spellbooks:max_mana");
+    private static final ResourceLocation IRONS_RES_MAGICA_RL = ResourceLocation.parse("irons_spellbooks:spell_resist");
+    private static final ResourceLocation IRONS_PODER_RL      = ResourceLocation.parse("irons_spellbooks:spell_power");
 
     public static void aplicarClasse(Player jogador, ClasseRaca classe) {
         removerTodosOsModificadores(jogador);
@@ -45,7 +48,8 @@ public class AtributosClasse {
         for (ElementoMago e : ElementoMago.values()) {
             ResourceLocation id = rl("mago.elemento." + e.id);
             double valor = (e == elemento) ? 0.15 : -0.20;
-            addI(jogador, e.chaveAtributo, id, valor, AttributeModifier.Operation.ADD_VALUE);
+            ResourceLocation attrLoc = ResourceLocation.parse(e.chaveAtributo);
+            addIrons(jogador, attrLoc, id, valor, AttributeModifier.Operation.ADD_VALUE);
         }
     }
 
@@ -53,9 +57,9 @@ public class AtributosClasse {
         removerVanilla(jogador, Attributes.ARMOR, ARMADURA_GUERREIRO, ARMADURA_GUERREIRO_MAGICO, ARMADURA_MAGO);
         removerVanilla(jogador, Attributes.ATTACK_DAMAGE, DANO_GUERREIRO, DANO_MAGO);
         if (ironsCarregado()) {
-            removerIrons(jogador, IRONS_MANA,       MANA_GUERREIRO, MANA_GUERREIRO_MAGICO, MANA_MAGO);
-            removerIrons(jogador, IRONS_RES_MAGICA, RES_MAGICA_GUERREIRO, RES_MAGICA_GUERREIRO_M, RES_MAGICA_MAGO);
-            removerIrons(jogador, IRONS_PODER,      PODER_GUERREIRO, PODER_MAGO);
+            removerIrons(jogador, IRONS_MANA_RL,       MANA_GUERREIRO, MANA_GUERREIRO_MAGICO, MANA_MAGO);
+            removerIrons(jogador, IRONS_RES_MAGICA_RL, RES_MAGICA_GUERREIRO, RES_MAGICA_GUERREIRO_M, RES_MAGICA_MAGO);
+            removerIrons(jogador, IRONS_PODER_RL,      PODER_GUERREIRO, PODER_MAGO);
             removerElementoMago(jogador);
         }
     }
@@ -63,34 +67,40 @@ public class AtributosClasse {
     public static void removerElementoMago(Player jogador) {
         if (!ironsCarregado()) return;
         for (ElementoMago e : ElementoMago.values()) {
-            AttributeInstance inst = buscarAtributo(jogador, e.chaveAtributo);
+            ResourceLocation attrLoc = ResourceLocation.parse(e.chaveAtributo);
+            AttributeInstance inst = getAtributoIrons(jogador, attrLoc);
             if (inst != null) inst.removeModifier(rl("mago.elemento." + e.id));
         }
     }
 
+    public static boolean ehGuerreiro(Player jogador) {
+        String classe = jogador.getPersistentData().getString(ModPrincipal.TAG_CLASSE);
+        return ClasseRaca.GUERREIRO.id.equals(classe);
+    }
+
     private static void aplicarGuerreiro(Player jogador) {
-        addV(jogador, Attributes.ARMOR,         ARMADURA_GUERREIRO,  0.10,     AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
-        addV(jogador, Attributes.ATTACK_DAMAGE, DANO_GUERREIRO,      0.4,      AttributeModifier.Operation.ADD_VALUE);
+        addV(jogador, Attributes.ARMOR,         ARMADURA_GUERREIRO,  2.0,   AttributeModifier.Operation.ADD_VALUE);
+        addV(jogador, Attributes.ATTACK_DAMAGE, DANO_GUERREIRO,      0.4,   AttributeModifier.Operation.ADD_VALUE);
         if (ironsCarregado()) {
-            addI(jogador, IRONS_MANA,       MANA_GUERREIRO,       -10000.0, AttributeModifier.Operation.ADD_VALUE);
-            addI(jogador, IRONS_RES_MAGICA, RES_MAGICA_GUERREIRO,   0.20,   AttributeModifier.Operation.ADD_VALUE);
-            addI(jogador, IRONS_PODER,      PODER_GUERREIRO,      -10000.0, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_RES_MAGICA_RL, RES_MAGICA_GUERREIRO, 0.20, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_MANA_RL,       MANA_GUERREIRO,      -1.0,  AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            addIrons(jogador, IRONS_PODER_RL,      PODER_GUERREIRO,     -1.0,  AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         }
     }
 
     private static void aplicarGuerreiroMagico(Player jogador) {
-        addV(jogador, Attributes.ARMOR, ARMADURA_GUERREIRO_MAGICO, 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addV(jogador, Attributes.ARMOR, ARMADURA_GUERREIRO_MAGICO, 1.0, AttributeModifier.Operation.ADD_VALUE);
         if (ironsCarregado())
-            addI(jogador, IRONS_MANA, MANA_GUERREIRO_MAGICO, 200.0, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_MANA_RL, MANA_GUERREIRO_MAGICO, 100.0, AttributeModifier.Operation.ADD_VALUE);
     }
 
     private static void aplicarMago(Player jogador) {
-        addV(jogador, Attributes.ARMOR,         ARMADURA_MAGO, -0.10, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+        addV(jogador, Attributes.ARMOR,         ARMADURA_MAGO, -2.0,  AttributeModifier.Operation.ADD_VALUE);
         addV(jogador, Attributes.ATTACK_DAMAGE, DANO_MAGO,     -0.1,  AttributeModifier.Operation.ADD_VALUE);
         if (ironsCarregado()) {
-            addI(jogador, IRONS_MANA,       MANA_MAGO,       500.0, AttributeModifier.Operation.ADD_VALUE);
-            addI(jogador, IRONS_RES_MAGICA, RES_MAGICA_MAGO,  0.10, AttributeModifier.Operation.ADD_VALUE);
-            addI(jogador, IRONS_PODER,      PODER_MAGO,       0.05, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_MANA_RL,       MANA_MAGO,       400.0, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_RES_MAGICA_RL, RES_MAGICA_MAGO,  0.10, AttributeModifier.Operation.ADD_VALUE);
+            addIrons(jogador, IRONS_PODER_RL,      PODER_MAGO,       0.05, AttributeModifier.Operation.ADD_VALUE);
         }
     }
 
@@ -107,26 +117,24 @@ public class AtributosClasse {
         for (ResourceLocation id : ids) inst.removeModifier(id);
     }
 
-    private static void addI(Player jogador, String chave, ResourceLocation id,
-                             double valor, AttributeModifier.Operation op) {
-        AttributeInstance inst = buscarAtributo(jogador, chave);
-        if (inst != null && inst.getModifier(id) == null)
-            inst.addPermanentModifier(new AttributeModifier(id, valor, op));
+    private static void addIrons(Player jogador, ResourceLocation attrLoc, ResourceLocation modId,
+                                 double valor, AttributeModifier.Operation op) {
+        AttributeInstance inst = getAtributoIrons(jogador, attrLoc);
+        if (inst != null && inst.getModifier(modId) == null) {
+            inst.addPermanentModifier(new AttributeModifier(modId, valor, op));
+        }
     }
 
-    private static void removerIrons(Player jogador, String chave, ResourceLocation... ids) {
-        AttributeInstance inst = buscarAtributo(jogador, chave);
+    private static void removerIrons(Player jogador, ResourceLocation attrLoc, ResourceLocation... ids) {
+        AttributeInstance inst = getAtributoIrons(jogador, attrLoc);
         if (inst == null) return;
         for (ResourceLocation id : ids) inst.removeModifier(id);
     }
 
-    private static AttributeInstance buscarAtributo(Player jogador, String chave) {
-        ResourceLocation alvo = ResourceLocation.tryParse(chave);
-        if (alvo == null) return null;
-        for (AttributeInstance inst : jogador.getAttributes().getSyncableAttributes())
-            if (inst.getAttribute().unwrapKey().map(k -> k.location().equals(alvo)).orElse(false))
-                return inst;
-        return null;
+    private static AttributeInstance getAtributoIrons(Player jogador, ResourceLocation attrLoc) {
+        Optional<Holder.Reference<Attribute>> holder = BuiltInRegistries.ATTRIBUTE.getHolder(attrLoc);
+        if (holder.isEmpty()) return null;
+        return jogador.getAttribute(holder.get());
     }
 
     private static boolean ironsCarregado() {

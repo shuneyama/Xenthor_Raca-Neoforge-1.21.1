@@ -39,7 +39,7 @@ public class PoderInvocacao {
 
         if (agora < fimCooldown) {
             long segundos = (fimCooldown - agora) / 20;
-            jogador.sendSystemMessage(Component.literal("Invocacao em cooldown! Aguarde " + segundos + "s.")
+            jogador.sendSystemMessage(Component.literal("Invocação em recarga! Aguarde " + segundos + "s.")
                     .withStyle(ChatFormatting.GRAY));
             return;
         }
@@ -79,7 +79,7 @@ public class PoderInvocacao {
 
         ESQUELETOS.put(jogador.getUUID(), ids);
 
-        jogador.sendSystemMessage(Component.literal("Voce invocou " + invocados + " esqueletos!")
+        jogador.sendSystemMessage(Component.literal("Você invocou " + invocados + " esqueletos!")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 

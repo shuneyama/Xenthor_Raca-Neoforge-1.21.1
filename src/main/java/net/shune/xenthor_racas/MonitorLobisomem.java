@@ -11,6 +11,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -51,6 +52,38 @@ public class MonitorLobisomem {
     }
 
     @SubscribeEvent
+    public static void aoAplicarEfeito(MobEffectEvent.Applicable evento) {
+        if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
+        if (!Raca.LOBISOMEM.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
+
+        if (evento.getEffectInstance().getEffect().is(MobEffects.HUNGER)) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        }
+
+        String efeitoId = evento.getEffectInstance().getEffect().unwrapKey()
+                .map(k -> k.location().toString()).orElse("");
+        if (efeitoId.contains("rotten") || efeitoId.contains("sink")) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        }
+    }
+
+    @SubscribeEvent
+    public static void aoTerminarDeUsar(LivingEntityUseItemEvent.Finish evento) {
+        if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
+        if (!Raca.LOBISOMEM.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
+
+        ItemStack item = evento.getItem();
+        if (item.is(Items.ROTTEN_FLESH)) {
+            jogador.removeEffect(MobEffects.HUNGER);
+            jogador.getActiveEffects().removeIf(effect -> {
+                String id = effect.getEffect().unwrapKey()
+                        .map(k -> k.location().toString()).orElse("");
+                return id.contains("rotten") || id.contains("sink");
+            });
+        }
+    }
+
+    @SubscribeEvent
     public static void aoDanoRecebido(LivingIncomingDamageEvent evento) {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
         if (!Raca.LOBISOMEM.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
@@ -75,7 +108,7 @@ public class MonitorLobisomem {
         ItemStack item = evento.getItemStack();
         if (ehComida(item) && !ehCarne(item)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Lobisomens so podem comer carne!")
+            jogador.sendSystemMessage(Component.literal("Lobisomens só podem comer carne!")
                     .withStyle(ChatFormatting.RED));
         }
     }

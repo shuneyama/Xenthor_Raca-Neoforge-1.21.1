@@ -11,8 +11,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = ModPrincipal.ID_MOD)
 public class MonitorDanoRegen {
@@ -33,10 +31,22 @@ public class MonitorDanoRegen {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
 
         String raca = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
+        String tipo = evento.getSource().type().msgId();
+        boolean ehMagiaHoly = tipo.contains("holy") || tipo.contains("divine") || tipo.contains("smite");
+        boolean ehMagiaFogo = evento.getSource().is(DamageTypeTags.IS_FIRE) || tipo.contains("fire") || tipo.contains("blaze");
+        boolean ehMagiaRaio = tipo.contains("lightning") || tipo.contains("electro") || tipo.contains("shock");
+        boolean ehMagiaGelo = tipo.contains("ice") || tipo.contains("frost") || tipo.contains("freeze");
 
         if (Raca.CORROMPIDO.id.equals(raca)) {
-            String tipo = evento.getSource().type().msgId();
-            if (tipo.contains("holy") || tipo.contains("divine")) {
+            if (ehMagiaHoly) {
+                evento.setAmount(evento.getAmount() * 1.10f);
+            }
+        }
+
+        if (Raca.CELESTIAL.id.equals(raca)) {
+            boolean ehMagiaNegra = tipo.contains("blood") || tipo.contains("ender") || tipo.contains("eldritch") 
+                    || tipo.contains("void") || tipo.contains("wither");
+            if (ehMagiaNegra) {
                 evento.setAmount(evento.getAmount() * 1.10f);
             }
         }
@@ -45,15 +55,41 @@ public class MonitorDanoRegen {
             if (evento.getSource().is(DamageTypeTags.IS_FALL)) {
                 evento.setCanceled(true);
             }
+            if (ehMagiaRaio) {
+                evento.setAmount(evento.getAmount() * 1.10f);
+            }
+        }
+
+        if (Raca.ANDROID.id.equals(raca)) {
+            if (ehMagiaRaio) {
+                evento.setAmount(evento.getAmount() * 1.10f);
+            }
+            if (ehMagiaGelo) {
+                evento.setAmount(evento.getAmount() * 1.05f);
+            }
         }
 
         if (Raca.MORTO_VIVO.id.equals(raca)) {
             if (evento.getSource().is(DamageTypeTags.IS_FIRE)) {
                 evento.setAmount(evento.getAmount() * 1.20f);
             }
-            String tipo = evento.getSource().type().msgId();
-            if (tipo.contains("holy") || tipo.contains("divine")) {
+            if (ehMagiaHoly) {
                 evento.setAmount(evento.getAmount() * 1.20f);
+            }
+        }
+
+        if (Raca.VAMPIRO.id.equals(raca) || Raca.DAMPIRO.id.equals(raca)) {
+            if (ehMagiaHoly) {
+                evento.setAmount(evento.getAmount() * 1.15f);
+            }
+            if (ehMagiaFogo) {
+                evento.setAmount(evento.getAmount() * 1.15f);
+            }
+        }
+
+        if (Raca.OGRO.id.equals(raca)) {
+            if (ehMagiaHoly) {
+                evento.setAmount(evento.getAmount() * 1.10f);
             }
         }
     }

@@ -33,27 +33,30 @@ public class PoderEspirito {
         long fimCd = jogador.getPersistentData().getLong(TAG_ESPECTRAL_CD);
         if (agora < fimCd) {
             long seg = (fimCd - agora) / 20;
-            jogador.sendSystemMessage(Component.literal("Forma espectral em cooldown! Aguarde " + seg + "s.")
+            jogador.sendSystemMessage(Component.literal("Forma espectral em recarga! Aguarde " + seg + "s.")
                     .withStyle(ChatFormatting.GRAY));
             return;
         }
 
         jogador.getPersistentData().putBoolean(TAG_ESPECTRAL, true);
         jogador.getPersistentData().putLong(TAG_ESPECTRAL_FIM, agora + DURACAO_TICKS);
-        jogador.getPersistentData().putLong(TAG_ESPECTRAL_CD, agora + DURACAO_TICKS + COOLDOWN_TICKS);
 
         jogador.forceAddEffect(new MobEffectInstance(MobEffects.INVISIBILITY, Integer.MAX_VALUE, 0, false, false), null);
         jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, Integer.MAX_VALUE, 1, false, false), null);
 
         net.shune.xenthor_racas.rede.RedeXenthor.enviarEspectral(jogador, true);
-        jogador.sendSystemMessage(Component.literal("Forma espectral ativada! Duracao: 30 segundos.")
+        jogador.sendSystemMessage(Component.literal("Forma espectral ativada! Duração: 30 segundos.")
                 .withStyle(ChatFormatting.DARK_GRAY));
     }
 
     private static void desativar(ServerPlayer jogador) {
         jogador.getPersistentData().putBoolean(TAG_ESPECTRAL, false);
+        jogador.getPersistentData().remove(TAG_ESPECTRAL_FIM);
         jogador.removeEffect(MobEffects.INVISIBILITY);
         jogador.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+
+        long agora = jogador.serverLevel().getGameTime();
+        jogador.getPersistentData().putLong(TAG_ESPECTRAL_CD, agora + COOLDOWN_TICKS);
 
         net.shune.xenthor_racas.rede.RedeXenthor.enviarEspectral(jogador, false);
         jogador.sendSystemMessage(Component.literal("Forma espectral desativada.")
@@ -73,6 +76,8 @@ public class PoderEspirito {
             long fim = jogador.getPersistentData().getLong(TAG_ESPECTRAL_FIM);
             if (agora >= fim) {
                 desativar(jogador);
+                jogador.sendSystemMessage(Component.literal("Forma espectral expirou.")
+                        .withStyle(ChatFormatting.GRAY));
                 return;
             }
         }

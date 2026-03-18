@@ -52,7 +52,7 @@ public class MonitorVampiro {
                 && jogador.serverLevel().canSeeSky(jogador.blockPosition());
 
         if (temSol && jogador.tickCount % 20 == 0) {
-            jogador.hurt(jogador.damageSources().onFire(), 1.0f);
+            jogador.hurt(jogador.damageSources().onFire(), 2.0f);
         }
 
         long bloqueioFim = jogador.getPersistentData().getLong(TAG_REGEN_BLOCK);
@@ -68,11 +68,16 @@ public class MonitorVampiro {
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, DURACAO_EFEITO, 1, true, false), null);
         }
 
-        if (!regenBloqueada) {
+        if (!regenBloqueada && !temSol) {
             if (ehNoite) {
                 jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 2, true, false), null);
             } else {
                 jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, DURACAO_EFEITO, 1, true, false), null);
+            }
+        } else if (temSol) {
+            var regen = jogador.getEffect(MobEffects.REGENERATION);
+            if (regen != null && regen.isAmbient()) {
+                jogador.removeEffect(MobEffects.REGENERATION);
             }
         }
     }
@@ -83,7 +88,7 @@ public class MonitorVampiro {
         if (!Raca.VAMPIRO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
         if (evento.getSource().is(DamageTypeTags.IS_FIRE)) {
-            evento.setAmount(evento.getAmount() * 1.15f);
+            evento.setAmount(evento.getAmount() * 2.0f);
         }
 
         var atacante = evento.getSource().getDirectEntity();
@@ -93,6 +98,7 @@ public class MonitorVampiro {
                 jogador.removeEffect(MobEffects.REGENERATION);
                 jogador.getPersistentData().putLong(TAG_REGEN_BLOCK,
                         jogador.serverLevel().getGameTime() + 20 * 5);
+                jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1, false, true), null);
             }
         }
     }

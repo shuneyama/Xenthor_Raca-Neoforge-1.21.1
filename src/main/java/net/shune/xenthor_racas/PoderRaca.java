@@ -9,7 +9,6 @@ public class PoderRaca {
         if (raca == null) return;
 
         switch (raca) {
-            case ELFO_NEGRO                                        -> FormaNegra.tentar(jogador);
             case CELESTIAL, BESTIAL_AEREO, FADA, DRAGONIC, VAMPIRO, DAMPIRO -> VooCelestial.alternar(jogador);
             case BESTIAL, ANDROID                                  -> PoderDeteccao.tentar(jogador);
             case MORTO_VIVO                                        -> PoderInvocacao.tentar(jogador);

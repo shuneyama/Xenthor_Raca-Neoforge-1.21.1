@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -24,20 +25,52 @@ public class ComandoRaca {
 
     public static void registrar(CommandDispatcher<CommandSourceStack> despachante) {
         despachante.register(
-                Commands.literal("raca")
-                        .requires(origem -> origem.hasPermission(2))
-                        .then(Commands.argument("alvos", EntityArgument.players())
-                                .then(Commands.argument("raca", StringArgumentType.word())
-                                        .suggests(SUGESTOES_RACA)
-                                        .executes(ComandoRaca::executar)
+                Commands.literal("racas")
+                        .requires(CommandSourceStack::isPlayer)
+                        .then(Commands.argument("raca", StringArgumentType.word())
+                                .suggests(SUGESTOES_RACA)
+                                .executes(ComandoRaca::executarProprio)
+                                .then(Commands.argument("alvos", EntityArgument.players())
+                                        .requires(origem -> origem.hasPermission(2))
+                                        .executes(ComandoRaca::executarOutro)
                                 )
                         )
         );
     }
 
-    private static int executar(CommandContext<CommandSourceStack> ctx) {
+    private static int executarProprio(CommandContext<CommandSourceStack> ctx) {
         if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
+
+        ServerPlayer jogador;
+        try {
+            jogador = origem.getPlayerOrException();
+        } catch (Exception e) {
+            origem.sendFailure(Component.literal("Este comando deve ser usado por um jogador."));
+            return 0;
+        }
+
+        String argRaca = StringArgumentType.getString(ctx, "raca").toLowerCase();
+        Raca racaEscolhida = Raca.porId(argRaca);
+        if (racaEscolhida == null) {
+            origem.sendFailure(Component.translatable("comando.xenthor_racas.raca_desconhecida", argRaca));
+            return 0;
+        }
+
+        aplicarParaJogador(jogador, racaEscolhida, origem);
+        return 1;
+    }
+
+    private static int executarOutro(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
+        CommandSourceStack origem = ctx.getSource();
+
+        String argRaca = StringArgumentType.getString(ctx, "raca").toLowerCase();
+        Raca racaEscolhida = Raca.porId(argRaca);
+        if (racaEscolhida == null) {
+            origem.sendFailure(Component.translatable("comando.xenthor_racas.raca_desconhecida", argRaca));
+            return 0;
+        }
 
         Collection<ServerPlayer> alvos;
         try {
@@ -47,43 +80,33 @@ public class ComandoRaca {
             return 0;
         }
 
-        String argRaca = StringArgumentType.getString(ctx, "raca").toLowerCase();
-        Raca racaEscolhida = Raca.porId(argRaca);
-
-        if (racaEscolhida == null) {
-            origem.sendFailure(Component.translatable("comando.xenthor_racas.raca_desconhecida", argRaca));
-            return 0;
-        }
-
         int afetados = 0;
         for (ServerPlayer jogador : alvos) {
-            String racaAnterior = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
-            removerGlowingAnterior(jogador, racaAnterior);
-
-            if (PoderTransformacao.estaTransformado(jogador)) {
-                PoderTransformacao.desativar(jogador);
-            }
-
-            if (VooCelestial.estaAtivo(jogador)) {
-                VooCelestial.alternar(jogador);
-            }
-
-            AtributosRaca.aplicarRaca(jogador, racaEscolhida);
-            EscalaJogador.aplicarEscala(jogador, racaEscolhida);
-            jogador.getPersistentData().putString(ModPrincipal.TAG_RACA, racaEscolhida.id);
-            aplicarGlowing(jogador, racaEscolhida);
-
-            final Raca racaFinal = racaEscolhida;
-            origem.sendSuccess(() ->
-                            Component.translatable("comando.xenthor_racas.raca_aplicada",
-                                    jogador.getDisplayName(),
-                                    Component.translatable("raca.xenthor_racas." + racaFinal.id)),
-                    true);
+            aplicarParaJogador(jogador, racaEscolhida, origem);
             afetados++;
-            RedeXenthor.enviarRaca(jogador, racaEscolhida.id);
         }
-
         return afetados;
+    }
+
+    private static void aplicarParaJogador(ServerPlayer jogador, Raca racaEscolhida, CommandSourceStack origem) {
+        String racaAnterior = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
+        removerGlowingAnterior(jogador, racaAnterior);
+
+        if (PoderTransformacao.estaTransformado(jogador)) PoderTransformacao.desativar(jogador);
+        if (VooCelestial.estaAtivo(jogador)) VooCelestial.alternar(jogador);
+
+        AtributosRaca.aplicarRaca(jogador, racaEscolhida);
+        EscalaJogador.aplicarEscala(jogador, racaEscolhida);
+        jogador.getPersistentData().putString(ModPrincipal.TAG_RACA, racaEscolhida.id);
+        aplicarGlowing(jogador, racaEscolhida);
+
+        final Raca racaFinal = racaEscolhida;
+        origem.sendSuccess(() ->
+                        Component.translatable("comando.xenthor_racas.raca_aplicada",
+                                jogador.getDisplayName(),
+                                Component.translatable("raca.xenthor_racas." + racaFinal.id)),
+                true);
+        RedeXenthor.enviarRaca(jogador, racaEscolhida.id);
     }
 
     private static void removerGlowingAnterior(ServerPlayer jogador, String racaId) {

@@ -50,7 +50,7 @@ public class MonitorCorrompido {
                 jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 2400, 0, true, false), null);
             }
             if (jogador.tickCount % 10 == 0) {
-                jogador.hurt(jogador.damageSources().drown(), 4.0f);
+                jogador.hurt(jogador.damageSources().drown(), 12.0f);
             }
         }
 
@@ -75,6 +75,16 @@ public class MonitorCorrompido {
         if (!Raca.CORROMPIDO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
         if (evento.getEffectInstance().getEffect().is(MobEffects.POISON)) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        }
+
+        if (evento.getEffectInstance().getEffect().is(MobEffects.HUNGER)) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        }
+
+        String efeitoId = evento.getEffectInstance().getEffect().unwrapKey()
+                .map(k -> k.location().toString()).orElse("");
+        if (efeitoId.contains("rotten") || efeitoId.contains("sink")) {
             evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
         }
     }

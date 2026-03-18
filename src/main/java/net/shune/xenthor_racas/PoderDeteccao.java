@@ -33,22 +33,19 @@ public class PoderDeteccao {
         long agora = jogador.serverLevel().getGameTime();
 
         if (jogador.getPersistentData().getBoolean(TAG_DETECCAO_ATIVA)) {
-            jogador.getPersistentData().putBoolean(TAG_DETECCAO_ATIVA, false);
-            jogador.sendSystemMessage(Component.literal("Deteccao desativada.")
-                    .withStyle(ChatFormatting.GRAY));
+            desativar(jogador, raca);
             return;
         }
 
         long fimCooldown = jogador.getPersistentData().getLong(TAG_DETECCAO_COOLDOWN);
         if (agora < fimCooldown) {
             long segundos = (fimCooldown - agora) / 20;
-            jogador.sendSystemMessage(Component.literal("Deteccao em cooldown! Aguarde " + segundos + "s.")
+            jogador.sendSystemMessage(Component.literal("Detecção em recarga! Aguarde " + segundos + "s.")
                     .withStyle(ChatFormatting.GRAY));
             return;
         }
 
         int duracaoTicks;
-        int cooldownTicks = 20 * 60;
         boolean detectaPlayers = false;
 
         switch (raca) {
@@ -59,7 +56,6 @@ public class PoderDeteccao {
             }
             case VAMPIRO, DAMPIRO, LOBISOMEM -> {
                 duracaoTicks = 20 * 30;
-                cooldownTicks = 20 * 60 * 2;
                 detectaPlayers = true;
             }
             default -> { return; }
@@ -67,11 +63,28 @@ public class PoderDeteccao {
 
         jogador.getPersistentData().putBoolean(TAG_DETECCAO_ATIVA, true);
         jogador.getPersistentData().putLong(TAG_DETECCAO_FIM, agora + duracaoTicks);
-        jogador.getPersistentData().putLong(TAG_DETECCAO_COOLDOWN, agora + duracaoTicks + cooldownTicks);
         jogador.getPersistentData().putBoolean(ModPrincipal.ID_MOD + ":deteccao_players", detectaPlayers);
 
         String msg = detectaPlayers ? "Scanner ativado!" : "Instinto ativado!";
         jogador.sendSystemMessage(Component.literal(msg).withStyle(ChatFormatting.YELLOW));
+    }
+
+    private static void desativar(ServerPlayer jogador, Raca raca) {
+        jogador.getPersistentData().putBoolean(TAG_DETECCAO_ATIVA, false);
+        jogador.getPersistentData().remove(TAG_DETECCAO_FIM);
+
+        int cooldownTicks = switch (raca) {
+            case BESTIAL, BESTIAL_AEREO -> 20 * 60;
+            case ANDROID -> 20 * 30;
+            case VAMPIRO, DAMPIRO, LOBISOMEM -> 20 * 60 * 2;
+            default -> 20 * 60;
+        };
+
+        long agora = jogador.serverLevel().getGameTime();
+        jogador.getPersistentData().putLong(TAG_DETECCAO_COOLDOWN, agora + cooldownTicks);
+
+        jogador.sendSystemMessage(Component.literal("Detecção desativada.")
+                .withStyle(ChatFormatting.GRAY));
     }
 
     @SubscribeEvent
@@ -83,9 +96,12 @@ public class PoderDeteccao {
         long fim = jogador.getPersistentData().getLong(TAG_DETECCAO_FIM);
 
         if (agora >= fim) {
-            jogador.getPersistentData().putBoolean(TAG_DETECCAO_ATIVA, false);
-            jogador.sendSystemMessage(Component.literal("Deteccao expirou.")
-                    .withStyle(ChatFormatting.GRAY));
+            Raca raca = Raca.porId(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA));
+            if (raca != null) {
+                desativar(jogador, raca);
+                jogador.sendSystemMessage(Component.literal("Detecção expirou.")
+                        .withStyle(ChatFormatting.GRAY));
+            }
             return;
         }
 

@@ -54,7 +54,7 @@ public class MonitorAlimentacaoElfo {
         if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
             evento.setCanceled(true);
             jogador.sendSystemMessage(
-                    Component.literal("Elfos Naturais so podem consumir alimentos naturais!")
+                    Component.literal("Elfos Naturais só podem consumir alimentos naturais!")
                             .withStyle(ChatFormatting.DARK_GREEN));
         }
     }

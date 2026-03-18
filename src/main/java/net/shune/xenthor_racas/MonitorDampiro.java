@@ -1,15 +1,11 @@
 package net.shune.xenthor_racas;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.Team;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -58,7 +54,7 @@ public class MonitorDampiro {
         if (!Raca.DAMPIRO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
         if (evento.getSource().is(DamageTypeTags.IS_FIRE)) {
-            evento.setAmount(evento.getAmount() * 1.15f);
+            evento.setAmount(evento.getAmount() * 2.0f);
         }
 
         var atacante = evento.getSource().getDirectEntity();
@@ -68,6 +64,7 @@ public class MonitorDampiro {
                 jogador.removeEffect(MobEffects.REGENERATION);
                 jogador.getPersistentData().putLong(TAG_REGEN_BLOCK,
                         jogador.serverLevel().getGameTime() + 20 * 5);
+                jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1, false, true), null);
             }
         }
     }

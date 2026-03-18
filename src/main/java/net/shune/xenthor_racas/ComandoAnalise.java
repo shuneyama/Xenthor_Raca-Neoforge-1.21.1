@@ -1,55 +1,53 @@
 package net.shune.xenthor_racas;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ComandoAnalise {
-
-    private static final SuggestionProvider<CommandSourceStack> SUGESTOES_RACA =
-            (ctx, builder) -> {
-                for (Raca r : Raca.values())
-                    builder.suggest(r.id);
-                return builder.buildFuture();
-            };
-
-    private static final SuggestionProvider<CommandSourceStack> SUGESTOES_CLASSE =
-            (ctx, builder) -> {
-                for (ClasseRaca c : ClasseRaca.values())
-                    builder.suggest(c.id);
-                return builder.buildFuture();
-            };
 
     public static void registrar(CommandDispatcher<CommandSourceStack> despachante, String raiz) {
         despachante.register(
                 Commands.literal(raiz)
                         .requires(origem -> origem.hasPermission(2))
-                        .then(Commands.literal("racas")
-                                .then(Commands.literal("analise")
+                        .then(Commands.literal("analise")
+                                .then(Commands.literal("racas")
                                         .executes(ComandoAnalise::executarAnaliseRacas)
                                 )
-                                .then(Commands.argument("raca", StringArgumentType.word())
-                                        .suggests(SUGESTOES_RACA)
-                                        .executes(ComandoAnalise::executarFiltroRaca)
-                                )
-                        )
-                        .then(Commands.literal("classes")
-                                .then(Commands.literal("analise")
+                                .then(Commands.literal("classes")
                                         .executes(ComandoAnalise::executarAnaliseClasses)
                                 )
-                                .then(Commands.argument("classe", StringArgumentType.word())
-                                        .suggests(SUGESTOES_CLASSE)
-                                        .executes(ComandoAnalise::executarFiltroClasse)
+                                .then(Commands.literal("elementos")
+                                        .executes(ComandoAnalise::executarAnaliseElementos)
+                                )
+                        )
+                        .then(Commands.literal("reset")
+                                .then(Commands.literal("raca")
+                                        .executes(ctx -> executarResetRaca(ctx, null))
+                                        .then(Commands.argument("alvo", EntityArgument.players())
+                                                .executes(ctx -> executarResetRaca(ctx, EntityArgument.getPlayers(ctx, "alvo")))
+                                        )
+                                )
+                                .then(Commands.literal("cooldown")
+                                        .executes(ctx -> executarResetCooldowns(ctx, null))
+                                        .then(Commands.argument("alvo", EntityArgument.players())
+                                                .executes(ctx -> executarResetCooldowns(ctx, EntityArgument.getPlayers(ctx, "alvo")))
+                                        )
+                                )
+                                .then(Commands.literal("classe")
+                                        .executes(ctx -> executarResetClasse(ctx, null))
+                                        .then(Commands.argument("alvo", EntityArgument.players())
+                                                .executes(ctx -> executarResetClasse(ctx, EntityArgument.getPlayers(ctx, "alvo")))
+                                        )
                                 )
                         )
         );
@@ -80,46 +78,6 @@ public class ComandoAnalise {
         }
 
         return jogadores.size();
-    }
-
-    private static int executarFiltroRaca(CommandContext<CommandSourceStack> ctx) {
-        if (!LicencaRacas.isLicencaValida()) return 0;
-        CommandSourceStack origem = ctx.getSource();
-        String argRaca = StringArgumentType.getString(ctx, "raca").toLowerCase();
-        Raca racaFiltro = Raca.porId(argRaca);
-
-        if (racaFiltro == null) {
-            origem.sendFailure(Component.translatable("comando.xenthor_racas.raca_desconhecida", argRaca));
-            return 0;
-        }
-
-        List<ServerPlayer> jogadores = origem.getServer().getPlayerList().getPlayers();
-        List<ServerPlayer> filtrados = new ArrayList<>();
-
-        for (ServerPlayer jogador : jogadores) {
-            String racaId = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
-            if (racaFiltro.id.equals(racaId)) {
-                filtrados.add(jogador);
-            }
-        }
-
-        ChatFormatting cor = corDaRaca(racaFiltro);
-
-        origem.sendSuccess(() -> Component.literal("═══ Jogadores com raca: ")
-                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                .append(Component.literal(racaFiltro.id).withStyle(cor))
-                .append(Component.literal(" ═══").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)), false);
-
-        if (filtrados.isEmpty()) {
-            origem.sendSuccess(() -> Component.literal("Nenhum jogador com essa raca.").withStyle(ChatFormatting.GRAY), false);
-            return 0;
-        }
-
-        for (ServerPlayer jogador : filtrados) {
-            origem.sendSuccess(() -> Component.literal("  " + jogador.getName().getString()).withStyle(ChatFormatting.WHITE), false);
-        }
-
-        return filtrados.size();
     }
 
     private static int executarAnaliseClasses(CommandContext<CommandSourceStack> ctx) {
@@ -155,50 +113,129 @@ public class ComandoAnalise {
         return jogadores.size();
     }
 
-    private static int executarFiltroClasse(CommandContext<CommandSourceStack> ctx) {
+    private static int executarAnaliseElementos(CommandContext<CommandSourceStack> ctx) {
         if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
-        String argClasse = StringArgumentType.getString(ctx, "classe").toLowerCase();
-        ClasseRaca classeFiltro = ClasseRaca.porId(argClasse);
+        List<ServerPlayer> jogadores = origem.getServer().getPlayerList().getPlayers();
 
-        if (classeFiltro == null) {
-            origem.sendFailure(Component.translatable("comando.xenthor_racas.classe_desconhecida", argClasse));
+        if (jogadores.isEmpty()) {
+            origem.sendSuccess(() -> Component.literal("Nenhum jogador online.").withStyle(ChatFormatting.GRAY), false);
             return 0;
         }
 
-        List<ServerPlayer> jogadores = origem.getServer().getPlayerList().getPlayers();
-        List<ServerPlayer> filtrados = new ArrayList<>();
+        origem.sendSuccess(() -> Component.literal("═══ Elementos dos Jogadores ═══").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
 
         for (ServerPlayer jogador : jogadores) {
             String classeId = jogador.getPersistentData().getString(ModPrincipal.TAG_CLASSE);
-            if (classeFiltro.id.equals(classeId)) {
-                filtrados.add(jogador);
-            }
-        }
-
-        ChatFormatting cor = corDaClasse(classeFiltro);
-
-        origem.sendSuccess(() -> Component.literal("═══ Jogadores com classe: ")
-                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)
-                .append(Component.literal(classeFiltro.id).withStyle(cor))
-                .append(Component.literal(" ═══").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD)), false);
-
-        if (filtrados.isEmpty()) {
-            origem.sendSuccess(() -> Component.literal("Nenhum jogador com essa classe.").withStyle(ChatFormatting.GRAY), false);
-            return 0;
-        }
-
-        for (ServerPlayer jogador : filtrados) {
             String elementoId = jogador.getPersistentData().getString(ModPrincipal.TAG_ELEMENTO);
-            MutableComponent linha = Component.literal("  " + jogador.getName().getString()).withStyle(ChatFormatting.WHITE);
-            if (classeFiltro == ClasseRaca.MAGO && elementoId != null && !elementoId.isEmpty()) {
-                linha = linha.append(Component.literal(" (" + elementoId + ")").withStyle(ChatFormatting.LIGHT_PURPLE));
-            }
-            MutableComponent linhaFinal = linha;
-            origem.sendSuccess(() -> linhaFinal, false);
+
+            if (!ClasseRaca.MAGO.id.equals(classeId)) continue;
+
+            String nomeElemento = (elementoId != null && !elementoId.isEmpty()) ? elementoId : "sem elemento";
+            MutableComponent linha = Component.literal(jogador.getName().getString() + " - ")
+                    .withStyle(ChatFormatting.WHITE)
+                    .append(Component.literal(nomeElemento).withStyle(ChatFormatting.LIGHT_PURPLE));
+            origem.sendSuccess(() -> linha, false);
         }
 
-        return filtrados.size();
+        return 1;
+    }
+
+    private static Collection<ServerPlayer> resolverAlvos(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> alvos) {
+        if (alvos != null && !alvos.isEmpty()) return alvos;
+        try {
+            ServerPlayer self = ctx.getSource().getPlayerOrException();
+            return List.of(self);
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private static int executarResetRaca(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> alvosArg) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
+        CommandSourceStack origem = ctx.getSource();
+        Collection<ServerPlayer> alvos = resolverAlvos(ctx, alvosArg);
+        if (alvos.isEmpty()) { origem.sendFailure(Component.literal("Nenhum alvo encontrado.").withStyle(ChatFormatting.RED)); return 0; }
+
+        for (ServerPlayer jogador : alvos) {
+            String racaAnterior = jogador.getPersistentData().getString(ModPrincipal.TAG_RACA);
+
+            if (PoderTransformacao.estaTransformado(jogador)) PoderTransformacao.desativar(jogador);
+            if (VooCelestial.estaAtivo(jogador)) VooCelestial.alternar(jogador);
+            if (FormaNegra.estaAtiva(jogador)) FormaNegra.desativar(jogador, false);
+
+            Raca racaObj = Raca.porId(racaAnterior);
+            if (racaObj != null) {
+                switch (racaObj) {
+                    case CELESTIAL   -> MonitorCelestial.removerEquipeGlowing(jogador);
+                    case CORROMPIDO  -> MonitorCorrompido.removerEquipeGlowing(jogador);
+                    case TRITAO      -> MonitorTritao.removerEquipeGlowing(jogador);
+                    case FADA        -> MonitorFada.removerEquipeGlowing(jogador);
+                    case ANDROID     -> MonitorAndroid.removerEquipeGlowing(jogador);
+                    case DRAGONIC    -> MonitorDragonic.removerEquipeGlowing(jogador);
+                    case MORTO_VIVO  -> MonitorMortoVivo.removerEquipeGlowing(jogador);
+                    case VAMPIRO     -> MonitorVampiro.removerEquipeGlowing(jogador);
+                    case DAMPIRO     -> MonitorVampiro.removerEquipeGlowing(jogador);
+                    case AMALDICOADO -> MonitorAmaldicoado.removerEquipeGlowing(jogador);
+                    case ESPIRITO    -> MonitorEspirito.removerEquipeGlowing(jogador);
+                    default -> {}
+                }
+            }
+
+            AtributosRaca.removerTodosOsModificadores(jogador);
+            EscalaJogador.aplicarEscala(jogador, Raca.HUMANO);
+            jogador.getPersistentData().putString(ModPrincipal.TAG_RACA, Raca.HUMANO.id);
+            net.shune.xenthor_racas.rede.RedeXenthor.enviarRaca(jogador, Raca.HUMANO.id);
+            jogador.removeAllEffects();
+
+            origem.sendSuccess(() -> Component.literal("Raça de " + jogador.getName().getString() + " resetada para Humano.")
+                    .withStyle(ChatFormatting.GREEN), true);
+        }
+        return alvos.size();
+    }
+
+    private static int executarResetCooldowns(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> alvosArg) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
+        CommandSourceStack origem = ctx.getSource();
+        Collection<ServerPlayer> alvos = resolverAlvos(ctx, alvosArg);
+        if (alvos.isEmpty()) { origem.sendFailure(Component.literal("Nenhum alvo encontrado.").withStyle(ChatFormatting.RED)); return 0; }
+
+        for (ServerPlayer jogador : alvos) {
+            var dados = jogador.getPersistentData();
+            dados.remove(ModPrincipal.ID_MOD + ":deteccao_cooldown");
+            dados.remove(ModPrincipal.ID_MOD + ":invocacao_cooldown");
+            dados.remove(ModPrincipal.ID_MOD + ":celestial_cura_cooldown");
+            dados.remove(ModPrincipal.ID_MOD + ":celestial_impulso_cd");
+            dados.remove(ModPrincipal.ID_MOD + ":forma_negra_cooldown");
+            dados.remove(ModPrincipal.ID_MOD + ":espirito_espectral_cd");
+            dados.remove(ModPrincipal.ID_MOD + ":espirito_espectral_fim");
+            dados.remove(ModPrincipal.ID_MOD + ":vampiro_regen_block");
+            dados.remove(ModPrincipal.ID_MOD + ":dampiro_regen_block");
+            dados.remove(ModPrincipal.ID_MOD + ":lobisomem_regen_block");
+            dados.remove(ModPrincipal.ID_MOD + ":amaldicoado_prox_buff");
+
+            origem.sendSuccess(() -> Component.literal("Cooldowns de " + jogador.getName().getString() + " resetados.")
+                    .withStyle(ChatFormatting.GREEN), true);
+        }
+        return alvos.size();
+    }
+
+    private static int executarResetClasse(CommandContext<CommandSourceStack> ctx, Collection<ServerPlayer> alvosArg) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
+        CommandSourceStack origem = ctx.getSource();
+        Collection<ServerPlayer> alvos = resolverAlvos(ctx, alvosArg);
+        if (alvos.isEmpty()) { origem.sendFailure(Component.literal("Nenhum alvo encontrado.").withStyle(ChatFormatting.RED)); return 0; }
+
+        for (ServerPlayer jogador : alvos) {
+            AtributosClasse.removerTodosOsModificadores(jogador);
+            jogador.getPersistentData().remove(ModPrincipal.TAG_CLASSE);
+            jogador.getPersistentData().remove(ModPrincipal.TAG_ELEMENTO);
+            jogador.getPersistentData().remove(ModPrincipal.TAG_AGUARDANDO_ELEMENTO);
+
+            origem.sendSuccess(() -> Component.literal("Classe de " + jogador.getName().getString() + " removida.")
+                    .withStyle(ChatFormatting.GREEN), true);
+        }
+        return alvos.size();
     }
 
     private static ChatFormatting corDaRaca(Raca raca) {

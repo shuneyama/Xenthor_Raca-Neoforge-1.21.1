@@ -33,7 +33,7 @@ public class MonitorAlimentacaoTritao {
         ItemStack item = evento.getItemStack();
         if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Tritoes so podem comer peixes e alimentos do mar!")
+            jogador.sendSystemMessage(Component.literal("Tritões só podem comer peixes e alimentos do mar!")
                     .withStyle(ChatFormatting.AQUA));
         }
     }

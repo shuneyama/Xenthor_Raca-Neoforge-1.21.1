@@ -33,7 +33,7 @@ public class MonitorAlimentacaoCorrompido {
         ItemStack item = evento.getItemStack();
         if (ehComida(item) && !ALIMENTOS_PERMITIDOS.contains(item.getItem())) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Corrompidos so podem comer alimentos podres!")
+            jogador.sendSystemMessage(Component.literal("Corrompidos só podem comer alimentos podres!")
                     .withStyle(ChatFormatting.DARK_RED));
         }
     }
@@ -54,8 +54,24 @@ public class MonitorAlimentacaoCorrompido {
         if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
         if (!Raca.CORROMPIDO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
-        if (evento.getItem().is(Items.ROTTEN_FLESH)) {
+        ItemStack item = evento.getItem();
+        
+        if (item.is(Items.ROTTEN_FLESH)) {
+            jogador.removeEffect(MobEffects.HUNGER);
+            
+            jogador.getActiveEffects().removeIf(effect -> {
+                String id = effect.getEffect().unwrapKey()
+                        .map(k -> k.location().toString()).orElse("");
+                return id.contains("rotten") || id.contains("sink");
+            });
+            
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 0, false, true), null);
+        }
+        
+        if (item.is(Items.SPIDER_EYE) || item.is(Items.POISONOUS_POTATO)) {
+            jogador.removeEffect(MobEffects.POISON);
+            jogador.removeEffect(MobEffects.HUNGER);
+            jogador.removeEffect(MobEffects.CONFUSION);
         }
     }
 

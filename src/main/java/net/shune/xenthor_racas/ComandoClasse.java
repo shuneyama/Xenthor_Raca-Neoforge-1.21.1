@@ -8,9 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.shune.xenthor_racas.rede.RedeXenthor;
 
@@ -46,34 +44,21 @@ public class ComandoClasse {
                                 )
                         )
         );
-
-        despachante.register(
-                Commands.literal("classes_elemento")
-                        .requires(origem -> origem.isPlayer() && aguardandoElemento(origem))
-                        .then(Commands.argument("elemento", StringArgumentType.word())
-                                .suggests(SUGESTOES_ELEMENTO)
-                                .executes(ComandoClasse::executarElemento)
-                        )
-        );
-
-        registrarReset(despachante, "shune");
-        registrarReset(despachante, "xenthor");
     }
 
-    private static void registrarReset(CommandDispatcher<CommandSourceStack> despachante, String raiz) {
+    public static void registrarElemento(CommandDispatcher<CommandSourceStack> despachante) {
         despachante.register(
-                Commands.literal(raiz)
+                Commands.literal("elemento")
                         .requires(origem -> origem.hasPermission(2))
-                        .then(Commands.literal("classes")
-                                .then(Commands.literal("resetar")
-                                        .then(Commands.argument("alvos", EntityArgument.players())
-                                                .executes(ComandoClasse::executarReset)
-                                        )
+                        .then(Commands.argument("alvos", EntityArgument.players())
+                                .executes(ComandoClasse::executarRemoverElemento)
+                                .then(Commands.argument("elemento", StringArgumentType.word())
+                                        .suggests(SUGESTOES_ELEMENTO)
+                                        .executes(ComandoClasse::executarDefinirElemento)
                                 )
                         )
         );
     }
-
     private static int executarProprio(CommandContext<CommandSourceStack> ctx) {
         if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
@@ -93,13 +78,15 @@ public class ComandoClasse {
             return 0;
         }
 
+        aplicarEConfirmar(jogador, classeEscolhida);
+
         if (classeEscolhida == ClasseRaca.MAGO) {
-            jogador.getPersistentData().putBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO, true);
-            enviarMenuElementos(jogador);
-            return 1;
+            jogador.sendSystemMessage(Component.literal("Você é um Mago sem elemento definido.")
+                    .withStyle(ChatFormatting.GRAY));
+            jogador.sendSystemMessage(Component.literal("Aguarde um administrador definir seu elemento.")
+                    .withStyle(ChatFormatting.GRAY));
         }
 
-        aplicarEConfirmar(jogador, classeEscolhida);
         return 1;
     }
 
@@ -124,29 +111,30 @@ public class ComandoClasse {
 
         int afetados = 0;
         for (ServerPlayer jogador : alvos) {
+            aplicarEConfirmar(jogador, classeEscolhida);
+
             if (classeEscolhida == ClasseRaca.MAGO) {
-                jogador.getPersistentData().putBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO, true);
-                enviarMenuElementos(jogador);
-                afetados++;
-                continue;
+                jogador.sendSystemMessage(Component.literal("Você é um Mago sem elemento definido.")
+                        .withStyle(ChatFormatting.GRAY));
+                jogador.sendSystemMessage(Component.literal("Aguarde um administrador definir seu elemento.")
+                        .withStyle(ChatFormatting.GRAY));
             }
 
-            aplicarEConfirmar(jogador, classeEscolhida);
             afetados++;
         }
 
         return afetados;
     }
 
-    private static int executarElemento(CommandContext<CommandSourceStack> ctx) {
+    private static int executarDefinirElemento(CommandContext<CommandSourceStack> ctx) {
         if (!LicencaRacas.isLicencaValida()) return 0;
         CommandSourceStack origem = ctx.getSource();
-        if (!(origem.getEntity() instanceof ServerPlayer jogador)) return 0;
 
-        if (!jogador.getPersistentData().getBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO)) {
-            jogador.sendSystemMessage(
-                    Component.literal("Voce nao esta aguardando escolha de elemento.")
-                            .withStyle(ChatFormatting.RED));
+        Collection<ServerPlayer> alvos;
+        try {
+            alvos = EntityArgument.getPlayers(ctx, "alvos");
+        } catch (Exception e) {
+            origem.sendFailure(Component.translatable("comando.xenthor_racas.sem_alvos"));
             return 0;
         }
 
@@ -158,19 +146,89 @@ public class ComandoClasse {
             return 0;
         }
 
-        AtributosClasse.aplicarMagoComElemento(jogador, elemento);
-        jogador.getPersistentData().putString(ModPrincipal.TAG_CLASSE, ClasseRaca.MAGO.id);
-        jogador.getPersistentData().putString(ModPrincipal.TAG_ELEMENTO, elemento.id);
-        jogador.getPersistentData().remove(ModPrincipal.TAG_AGUARDANDO_ELEMENTO);
+        int afetados = 0;
+        for (ServerPlayer jogador : alvos) {
+            String classeSalva = jogador.getPersistentData().getString(ModPrincipal.TAG_CLASSE);
 
-        RedeXenthor.enviarParaJogador(jogador, ClasseRaca.MAGO.id, elemento.id);
+            if (!ClasseRaca.MAGO.id.equals(classeSalva) && !ClasseRaca.GUERREIRO_MAGICO.id.equals(classeSalva)) {
+                origem.sendFailure(Component.literal(jogador.getName().getString() + " não é Mago nem Guerreiro Mágico!")
+                        .withStyle(ChatFormatting.RED));
+                continue;
+            }
 
-        final ElementoMago elemFinal = elemento;
-        origem.sendSuccess(() ->
-                        Component.translatable("comando.xenthor_racas.mago_elemento_aplicado",
-                                jogador.getDisplayName(),
-                                Component.translatable("elemento.xenthor_racas." + elemFinal.id)),
-                true);
+            AtributosClasse.aplicarMagoComElemento(jogador, elemento);
+            jogador.getPersistentData().putString(ModPrincipal.TAG_ELEMENTO, elemento.id);
+
+            RedeXenthor.enviarParaJogador(jogador, classeSalva, elemento.id);
+
+            jogador.sendSystemMessage(Component.literal("Seu elemento foi definido como: " + capitalize(elemento.id))
+                    .withStyle(ChatFormatting.GOLD));
+
+            final ElementoMago elemFinal = elemento;
+            origem.sendSuccess(() ->
+                            Component.translatable("comando.xenthor_racas.mago_elemento_aplicado",
+                                    jogador.getDisplayName(),
+                                    Component.translatable("elemento.xenthor_racas." + elemFinal.id)),
+                    true);
+
+            afetados++;
+        }
+
+        return afetados;
+    }
+
+    private static int executarRemoverElemento(CommandContext<CommandSourceStack> ctx) {
+        if (!LicencaRacas.isLicencaValida()) return 0;
+        CommandSourceStack origem = ctx.getSource();
+
+        Collection<ServerPlayer> alvos;
+        try {
+            alvos = EntityArgument.getPlayers(ctx, "alvos");
+        } catch (Exception e) {
+            origem.sendFailure(Component.translatable("comando.xenthor_racas.sem_alvos"));
+            return 0;
+        }
+
+        int afetados = 0;
+        for (ServerPlayer jogador : alvos) {
+            String classeSalva = jogador.getPersistentData().getString(ModPrincipal.TAG_CLASSE);
+
+            if (!ClasseRaca.MAGO.id.equals(classeSalva) && !ClasseRaca.GUERREIRO_MAGICO.id.equals(classeSalva)) {
+                origem.sendFailure(Component.literal(jogador.getName().getString() + " não é Mago nem Guerreiro Mágico!")
+                        .withStyle(ChatFormatting.RED));
+                continue;
+            }
+
+            AtributosClasse.removerElementoMago(jogador);
+            AtributosClasse.aplicarClasse(jogador, ClasseRaca.MAGO);
+            jogador.getPersistentData().remove(ModPrincipal.TAG_ELEMENTO);
+
+            RedeXenthor.enviarParaJogador(jogador, ClasseRaca.MAGO.id, "");
+
+            jogador.sendSystemMessage(Component.literal("Seu elemento foi removido.")
+                    .withStyle(ChatFormatting.GRAY));
+
+            origem.sendSuccess(() ->
+                            Component.literal("Elemento removido de " + jogador.getName().getString())
+                                    .withStyle(ChatFormatting.GREEN),
+                    true);
+
+            afetados++;
+        }
+
+        return afetados;
+    }
+
+    private static int executarListaElementos(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack origem = ctx.getSource();
+
+        origem.sendSuccess(() -> Component.literal("=== Elementos Disponiveis ===")
+                .withStyle(ChatFormatting.GOLD), false);
+
+        for (ElementoMago e : ElementoMago.values()) {
+            origem.sendSuccess(() -> Component.literal(" - " + capitalize(e.id))
+                    .withStyle(style -> style.withColor(corDoElemento(e))), false);
+        }
 
         return 1;
     }
@@ -212,46 +270,9 @@ public class ComandoClasse {
         RedeXenthor.enviarParaJogador(jogador, classe.id, "");
     }
 
-    private static void enviarMenuElementos(ServerPlayer jogador) {
-        jogador.sendSystemMessage(Component.translatable("comando.xenthor_racas.escolha_elemento")
-                .withStyle(ChatFormatting.GOLD));
-
-        MutableComponent linha = Component.empty();
-        ElementoMago[] elementos = ElementoMago.values();
-
-        for (int i = 0; i < elementos.length; i++) {
-            ElementoMago e = elementos[i];
-            MutableComponent botao = Component.literal("[" + capitalize(e.id) + "]")
-                    .withStyle(style -> style
-                            .withColor(corDoElemento(e))
-                            .withClickEvent(new ClickEvent(
-                                    ClickEvent.Action.RUN_COMMAND,
-                                    "/classes_elemento " + e.id
-                            ))
-                    );
-
-            linha = linha.append(botao);
-            if (i < elementos.length - 1)
-                linha = linha.append(Component.literal(" "));
-
-            if ((i + 1) % 5 == 0 && i < elementos.length - 1) {
-                jogador.sendSystemMessage(linha);
-                linha = Component.empty();
-            }
-        }
-
-        if (!linha.getSiblings().isEmpty())
-            jogador.sendSystemMessage(linha);
-    }
-
     private static boolean jogadorJaTemClasse(ServerPlayer jogador) {
         String classeSalva = jogador.getPersistentData().getString(ModPrincipal.TAG_CLASSE);
         return classeSalva != null && !classeSalva.isEmpty();
-    }
-
-    private static boolean aguardandoElemento(CommandSourceStack origem) {
-        if (!(origem.getEntity() instanceof ServerPlayer jogador)) return false;
-        return jogador.getPersistentData().getBoolean(ModPrincipal.TAG_AGUARDANDO_ELEMENTO);
     }
 
     private static int corDoElemento(ElementoMago elemento) {

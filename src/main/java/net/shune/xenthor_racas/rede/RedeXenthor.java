@@ -5,6 +5,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.shune.xenthor_racas.GlowingRaca;
 import net.shune.xenthor_racas.PoderRaca;
 import net.shune.xenthor_racas.PoderTransformacao;
 import net.shune.xenthor_racas.cliente.ManipuladorPacoteCliente;
@@ -38,6 +39,11 @@ public class RedeXenthor {
         reg.playToServer(PacoteTransformacao.TIPO, PacoteTransformacao.CODEC,
                 (pkt, ctx) -> ctx.enqueueWork(() -> {
                     if (ctx.player() instanceof ServerPlayer j) PoderTransformacao.tentar(j);
+                }));
+
+        reg.playToServer(PacoteGlowing.TIPO, PacoteGlowing.CODEC,
+                (pkt, ctx) -> ctx.enqueueWork(() -> {
+                    if (ctx.player() instanceof ServerPlayer j) GlowingRaca.alternar(j);
                 }));
     }
 

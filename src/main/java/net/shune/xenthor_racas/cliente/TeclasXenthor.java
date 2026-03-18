@@ -10,6 +10,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.shune.xenthor_racas.ModPrincipal;
+import net.shune.xenthor_racas.rede.PacoteGlowing;
 import net.shune.xenthor_racas.rede.PacotePoderPrimario;
 import net.shune.xenthor_racas.rede.PacotePoderSecundario;
 import net.shune.xenthor_racas.rede.PacoteTransformacao;
@@ -20,6 +21,7 @@ public class TeclasXenthor {
     public static KeyMapping TECLA_PODER_1;
     public static KeyMapping TECLA_PODER_2;
     public static KeyMapping TECLA_TRANSFORMACAO;
+    public static KeyMapping TECLA_GLOWING;
 
     public static void registrarTeclas(RegisterKeyMappingsEvent evento) {
         TECLA_PODER_1 = new KeyMapping(
@@ -40,9 +42,16 @@ public class TeclasXenthor {
                 GLFW.GLFW_KEY_K,
                 "key.categories.xenthor_racas"
         );
+        TECLA_GLOWING = new KeyMapping(
+                "key.xenthor_racas.glowing",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_G,
+                "key.categories.xenthor_racas"
+        );
         evento.register(TECLA_PODER_1);
         evento.register(TECLA_PODER_2);
         evento.register(TECLA_TRANSFORMACAO);
+        evento.register(TECLA_GLOWING);
     }
 
     @EventBusSubscriber(modid = ModPrincipal.ID_MOD, value = Dist.CLIENT)
@@ -59,6 +68,9 @@ public class TeclasXenthor {
 
             if (TECLA_TRANSFORMACAO != null && TECLA_TRANSFORMACAO.consumeClick())
                 PacketDistributor.sendToServer(new PacoteTransformacao());
+
+            if (TECLA_GLOWING != null && TECLA_GLOWING.consumeClick())
+                PacketDistributor.sendToServer(new PacoteGlowing());
         }
     }
 }

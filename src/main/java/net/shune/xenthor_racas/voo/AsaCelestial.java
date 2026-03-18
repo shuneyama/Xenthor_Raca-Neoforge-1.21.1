@@ -1,16 +1,20 @@
 package net.shune.xenthor_racas.voo;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ElytraItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.function.Consumer;
 
 public class AsaCelestial extends ElytraItem {
 
     public AsaCelestial(Properties propriedades) {
         super(propriedades
-                .durability(0)
+                .durability(1)
                 .stacksTo(1));
     }
 
@@ -26,6 +30,7 @@ public class AsaCelestial extends ElytraItem {
 
     @Override
     public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks) {
+        stack.setDamageValue(0);
         return true;
     }
 
@@ -35,6 +40,14 @@ public class AsaCelestial extends ElytraItem {
     }
 
     public boolean canBeDepleted() {
+        return false;
+    }
+
+    public void hurtAndBreak(int amount, ServerLevel level, ServerPlayer player, Consumer<Item> onBreak) {
+    }
+
+    @Override
+    public boolean isBarVisible(ItemStack stack) {
         return false;
     }
 

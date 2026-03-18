@@ -8,6 +8,7 @@ import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = ModPrincipal.ID_MOD)
@@ -25,6 +26,7 @@ public class MonitorBestial {
 
         jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, DURACAO_EFEITO, 1, true, false), null);
         jogador.forceAddEffect(new MobEffectInstance(MobEffects.DIG_SPEED, DURACAO_EFEITO, 1, true, false), null);
+        jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, DURACAO_EFEITO, 1, true, false), null);
     }
 
     @SubscribeEvent
@@ -37,8 +39,25 @@ public class MonitorBestial {
 
         if (ehCarne(item)) {
             jogador.forceAddEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 0, false, true), null);
+            jogador.forceAddEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 600, 2, false, true), null);
         } else {
             jogador.getFoodData().setSaturation(Math.max(0, jogador.getFoodData().getSaturationLevel() - 3.0f));
+        }
+    }
+
+    @SubscribeEvent
+    public static void aoAplicarEfeito(MobEffectEvent.Applicable evento) {
+        if (!(evento.getEntity() instanceof ServerPlayer jogador)) return;
+        if (!Raca.BESTIAL.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
+
+        if (evento.getEffectInstance().getEffect().is(MobEffects.HUNGER)) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        }
+
+        String efeitoId = evento.getEffectInstance().getEffect().unwrapKey()
+                .map(k -> k.location().toString()).orElse("");
+        if (efeitoId.contains("rotten") || efeitoId.contains("sink")) {
+            evento.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
         }
     }
 

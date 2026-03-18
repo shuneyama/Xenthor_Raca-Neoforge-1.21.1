@@ -23,7 +23,7 @@ public class MonitorAlimentacaoCelestial {
         ItemStack item = evento.getItemStack();
         if (ehProibido(item)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Celestiais nao podem consumir carne podre ou magia negra!")
+            jogador.sendSystemMessage(Component.literal("Celestiais não podem consumir carne podre ou magia negra!")
                     .withStyle(ChatFormatting.GOLD));
         }
     }

@@ -48,14 +48,14 @@ public class MonitorAlimentacaoAndroid {
 
         if (ehPocao(item)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Androids nao podem beber pocoes!")
+            jogador.sendSystemMessage(Component.literal("Androids não podem beber poções!")
                     .withStyle(ChatFormatting.BLUE));
             return;
         }
 
-        if (ehComida(item)) {
+        if (ehComidaNaoMinerio(item)) {
             evento.setCanceled(true);
-            jogador.sendSystemMessage(Component.literal("Androids so podem consumir minerios!")
+            jogador.sendSystemMessage(Component.literal("Androids só podem consumir minérios!")
                     .withStyle(ChatFormatting.BLUE));
         }
     }
@@ -70,16 +70,31 @@ public class MonitorAlimentacaoAndroid {
             evento.setCanceled(true);
             return;
         }
-        if (ehComida(item) && !MINERIOS.contains(item.getItem())) {
+        if (ehComidaNaoMinerio(item)) {
             evento.setCanceled(true);
         }
     }
 
-    private static boolean ehComida(ItemStack item) {
-        return item.getItem().getFoodProperties(item, null) != null;
+    private static boolean ehComidaNaoMinerio(ItemStack item) {
+        if (MINERIOS.contains(item.getItem())) return false;
+        return item.getItem().getFoodProperties(item, null) != null
+                && !item.is(Items.POTION)
+                && !item.is(Items.SPLASH_POTION)
+                && !item.is(Items.LINGERING_POTION)
+                && ehComidaVanilla(item);
+    }
+
+    private static boolean ehComidaVanilla(ItemStack item) {
+        return item.getItem().builtInRegistryHolder().key().location().getNamespace().equals("minecraft");
     }
 
     private static boolean ehPocao(ItemStack item) {
-        return item.is(Items.POTION) || item.is(Items.SPLASH_POTION) || item.is(Items.LINGERING_POTION);
+        if (!item.is(Items.POTION) && !item.is(Items.SPLASH_POTION) && !item.is(Items.LINGERING_POTION)) return false;
+        var conteudo = item.get(net.minecraft.core.component.DataComponents.POTION_CONTENTS);
+        if (conteudo != null && conteudo.potion().isPresent()) {
+            var potionKey = conteudo.potion().get().unwrapKey();
+            if (potionKey.isPresent() && potionKey.get().location().getPath().equals("water")) return false;
+        }
+        return true;
     }
 }

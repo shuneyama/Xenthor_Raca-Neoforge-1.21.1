@@ -21,6 +21,6 @@ public class MonitorBestialAereo {
         if (!Raca.BESTIAL_AEREO.id.equals(jogador.getPersistentData().getString(ModPrincipal.TAG_RACA))) return;
 
         jogador.forceAddEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, DURACAO_EFEITO, 1, true, false), null);
-        jogador.forceAddEffect(new MobEffectInstance(MobEffects.DIG_SPEED, DURACAO_EFEITO, 1, true, false), null);
+        jogador.forceAddEffect(new MobEffectInstance(MobEffects.DIG_SPEED, DURACAO_EFEITO, 2, true, false), null);
     }
 }

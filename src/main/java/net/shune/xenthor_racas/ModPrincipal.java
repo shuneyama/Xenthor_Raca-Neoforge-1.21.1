@@ -166,7 +166,7 @@ public class ModPrincipal {
                 Component.literal("Use o comando abaixo para jogar no seu estilo:")
                         .withStyle(ChatFormatting.GRAY));
 
-        MutableComponent botao = Component.literal("[ /classes @s <classe> ]")
+        MutableComponent botao = Component.literal("[/classes <classe>]")
                 .withStyle(style -> style
                         .withColor(0x55FFFF)
                         .withBold(true)

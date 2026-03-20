@@ -284,7 +284,6 @@ public class ComandoClasse {
         return switch (elemento) {
             case FOGO     -> 0xFF4500;
             case GELO     -> 0xADD8E6;
-            case AGUA     -> 0x1E90FF;
             case SANGUE   -> 0x8B0000;
             case ENDER    -> 0x7B2FBE;
             case ELDRITCH -> 0x2E0854;

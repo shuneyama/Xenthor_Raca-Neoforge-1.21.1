@@ -4,7 +4,6 @@ public enum ElementoMago {
 
     FOGO      ("fogo",     "irons_spellbooks:fire_spell_power"),
     GELO      ("gelo",     "irons_spellbooks:ice_spell_power"),
-    AGUA      ("agua",     "irons_spellbooks:water_spell_power"),
     SANGUE    ("sangue",   "irons_spellbooks:blood_spell_power"),
     ENDER     ("ender",    "irons_spellbooks:ender_spell_power"),
     ELDRITCH  ("eldritch", "irons_spellbooks:eldritch_spell_power"),
